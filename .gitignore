@@ -1,2 +1,35 @@
+# Docs (specs, plans) - local, not in git
 docs/
+
+# AI agents
+CLAUDE.md
+CLAUDE.local.md
+**/CLAUDE.md
+**/CLAUDE.local.md
+AGENTS.md
+**/AGENTS.md
+.claude/
+.mcp.json
 .superpowers/
+memory/
+.cursor/
+.cursorrules
+.codex/
+.aider*
+.windsurf/
+.windsurfrules
+GEMINI.md
+.gemini/
+
+# Build
+.DS_Store
+
+# Connect IQ
+watch/bin/
+watch/gen/
+watch/dist/
+
+# Proxy
+proxy/node_modules/
+proxy/.dev.vars
+proxy/.wrangler/
