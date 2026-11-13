@@ -1,6 +1,6 @@
 // /v1/glance response: nearest-station (near), city median (city) or out of coverage (out).
 
-import { UpstreamError, type History, type MapSnapshot, type Station } from "./aai";
+import { UpstreamError, dataAgeSec, type History, type MapSnapshot, type Station } from "./aai";
 import { candidateCities, type CityCode } from "./cities";
 import { idw, median, selectNear } from "./geo";
 import { pmToAqi } from "./aqi";
@@ -12,7 +12,7 @@ export type Resolved =
 
 export type GlanceResponse =
   | { m: "out" }
-  | { m: "near" | "city"; c: CityCode; aqi: number; pm: number; h: (number | null)[]; t: string; st: number; fb: boolean };
+  | { m: "near" | "city"; c: CityCode; aqi: number; pm: number; h: (number | null)[]; t: string; st: number; fb: boolean; a?: number };
 
 const HOUR_MS = 3_600_000;
 const HISTORY_HOURS = 5;
@@ -32,7 +32,7 @@ export function resolve(
   return { mode: "out" };
 }
 
-export function buildGlance(r: Resolved, map: MapSnapshot | null, hist: History | null): GlanceResponse {
+export function buildGlance(r: Resolved, map: MapSnapshot | null, hist: History | null, nowMs: number = Date.now()): GlanceResponse {
   if (r.mode === "out") return { m: "out" };
   if (!map || map.stations.length === 0) throw new UpstreamError("no map data");
 
@@ -75,6 +75,7 @@ export function buildGlance(r: Resolved, map: MapSnapshot | null, hist: History 
   while (h.length < HISTORY_HOURS) h.unshift(null);
   h.push(aqi);
 
+  const a = dataAgeSec(map.windowEnd, nowMs);
   return {
     m: r.mode,
     c: r.city,
@@ -84,5 +85,6 @@ export function buildGlance(r: Resolved, map: MapSnapshot | null, hist: History 
     t: map.windowEnd,
     st,
     fb: map.fallback,
+    ...(a === undefined ? {} : { a }),
   };
 }

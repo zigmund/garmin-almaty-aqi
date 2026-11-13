@@ -47,6 +47,12 @@ describe("/v1/glance", () => {
     expect(b.m).toBe("near");
     expect(b.h.length).toBe(6);
   });
+  it("a is a non-negative integer age in seconds", async () => {
+    const { call } = setup();
+    const b = await body(await call("/v1/glance?lat=43.25&lon=76.9"));
+    expect(Number.isInteger(b.a)).toBe(true);
+    expect(b.a).toBeGreaterThanOrEqual(0);
+  });
   it("city without coordinates", async () => {
     const { call, calls } = setup();
     const b = await body(await call("/v1/glance"));
@@ -98,6 +104,8 @@ describe("/v1/heatmap", () => {
     const b = await body(res);
     expect(b.g.length).toBe(Math.ceil(576 / 3) * 4);
     expect(calls.some((u) => u.includes("history"))).toBe(false);
+    expect(Number.isInteger(b.a)).toBe(true);
+    expect(b.a).toBeGreaterThanOrEqual(0);
   });
 });
 

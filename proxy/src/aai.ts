@@ -18,6 +18,12 @@ export interface History {
   hours: { hour: string; pm: Map<number, number> }[];
 }
 
+// Age of the data in whole seconds (>= 0) at nowMs, or undefined if its timestamp is unusable.
+export function dataAgeSec(windowEnd: string, nowMs: number): number | undefined {
+  const t = Date.parse(windowEnd);
+  return Number.isNaN(t) ? undefined : Math.max(0, Math.round((nowMs - t) / 1000));
+}
+
 export class UpstreamError extends Error {
   constructor(message: string) {
     super(message);
@@ -83,6 +89,10 @@ export class Aai {
     private now: () => number,
   ) {}
 
+  nowMs(): number {
+    return this.now();
+  }
+
   map(city: CityCode): Promise<MapSnapshot> {
     return this.get(`${this.base}/measurements/map?city=${city}`, parseMap);
   }
@@ -110,10 +120,15 @@ export class Aai {
         headers: { "x-api-key": this.key },
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
-      if (!res.ok) throw new UpstreamError(`upstream status ${res.status}`);
+      if (!res.ok) {
+        console.error(`aai: upstream status ${res.status}`);
+        throw new UpstreamError(`upstream status ${res.status}`);
+      }
       return parse(await res.json());
     } catch (e) {
       if (e instanceof UpstreamError) throw e;
+      // Class name only: messages can carry URLs or headers.
+      console.error(`aai: upstream request failed: ${e instanceof Error ? e.name : "error"}`);
       throw new UpstreamError(`upstream request failed: ${e instanceof Error ? e.name : "error"}`);
     }
   }

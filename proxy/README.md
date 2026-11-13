@@ -40,15 +40,17 @@ Query parameters (both endpoints):
 ### `GET /v1/glance`
 
 - `{"m":"out"}` - position is outside coverage.
-- `{"m":"near"|"city","c":<city>,"aqi":<int>,"pm":<PM2.5, 1 decimal>,"h":[...],"t":<time>,"st":<stations>,"fb":<bool>}`
+- `{"m":"near"|"city","c":<city>,"aqi":<int>,"pm":<PM2.5, 1 decimal>,"h":[...],"t":<time>,"a":<age s>,"st":<stations>,"fb":<bool>}`
   - `near`: IDW of the nearest stations; `city`: city median.
   - `h`: 6 hourly AQI values (null where no data), `st`: stations used,
-    `fb`: upstream served fallback data.
+    `fb`: upstream served fallback data. `a`: age of the data in whole seconds at response
+    time (>= 0, from `t`; omitted if `t` is unusable); the watch derives the data time as
+    receive time minus `a`.
 
 ### `GET /v1/heatmap`
 
 - `{"m":"out"}` or
-  `{"m":"near"|"city","c","bbox":[w,s,e,n],"w":24,"h":24,"g":"...","s":[[lat,lon,cat],...],"me":[x,y],"t"}`
+  `{"m":"near"|"city","c","bbox":[w,s,e,n],"w":24,"h":24,"g":"...","s":[[lat,lon,cat],...],"me":[x,y],"t","a"}`
 - `g`: base64 of `w*h` bytes, row-major from the north-west corner; each byte
   is an AQI category 0-5, or 255 for a cell with no data within 3 km.
 - `s`: station dots with their category; `me`: your position as [x, y] fractions (0-1) of the bbox from its north-west corner, present only when inside the bbox.

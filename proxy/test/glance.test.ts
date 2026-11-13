@@ -108,3 +108,28 @@ test("missing map throws UpstreamError", () => {
   expect(() => buildGlance({ mode: "city", city: "almaty" }, null, null)).toThrow(UpstreamError);
   expect(() => buildGlance({ mode: "city", city: "almaty" }, snap([]), null)).toThrow(UpstreamError);
 });
+
+const AT = Date.parse(WINDOW_END);
+
+test("a: data age in seconds at response time", () => {
+  const r = { mode: "city", city: "almaty" } as const;
+  expect(buildGlance(r, three, null, AT + 125_000)).toMatchObject({ a: 125 });
+  expect(buildGlance(r, three, null, AT)).toMatchObject({ a: 0 });
+});
+
+test("a: never negative (clock skew)", () => {
+  const r = { mode: "city", city: "almaty" } as const;
+  expect(buildGlance(r, three, null, AT - 60_000)).toMatchObject({ a: 0 });
+});
+
+test("a: fallback data is old, a reflects the data time", () => {
+  const r = { mode: "city", city: "almaty" } as const;
+  const fb = snap([north(1, 1, 10)], true);
+  expect(buildGlance(r, fb, null, AT + 3 * 3_600_000)).toMatchObject({ fb: true, a: 10_800 });
+});
+
+test("a: omitted when the data time is unparsable", () => {
+  const r = { mode: "city", city: "almaty" } as const;
+  const bad = { ...three, windowEnd: "" };
+  expect("a" in buildGlance(r, bad, null, AT)).toBe(false);
+});

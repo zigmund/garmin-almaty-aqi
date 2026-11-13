@@ -1,6 +1,6 @@
 // Cloudflare Worker entry: routes /v1/glance and /v1/heatmap over the AAI client.
 
-import { Aai, type History, type MapSnapshot } from "./aai";
+import { Aai, UpstreamError, type History, type MapSnapshot } from "./aai";
 import { candidateCities, isCity, type CityCode } from "./cities";
 import { buildGlance, resolve } from "./glance";
 import { buildHeatmap } from "./heatmap";
@@ -53,14 +53,16 @@ export async function handle(req: Request, aai: Aai): Promise<Response> {
     if (isGlance) {
       let hist: History | null = null;
       if (r.mode !== "out") hist = await aai.history(r.city).catch(() => null);
-      return reply(buildGlance(r, r.mode === "out" ? null : (maps[r.city] ?? null), hist));
+      return reply(buildGlance(r, r.mode === "out" ? null : (maps[r.city] ?? null), hist, aai.nowMs()));
     }
     if (r.mode === "out") return reply({ m: "out" });
     const map = maps[r.city];
     if (!map) return err("upstream", 502);
-    return reply(buildHeatmap(r, map, pos));
-  } catch {
-    // Never expose error details: they could carry upstream URLs or headers.
+    return reply(buildHeatmap(r, map, pos, 24, aai.nowMs()));
+  } catch (e) {
+    // Never expose or log error details: they could carry upstream URLs or headers.
+    // Upstream failures are already logged (status / class name) in aai.ts.
+    if (!(e instanceof UpstreamError)) console.error(`handler failed: ${e instanceof Error ? e.name : "error"}`);
     return err("upstream", 502);
   }
 }

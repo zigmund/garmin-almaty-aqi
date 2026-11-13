@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
+    "bench": "esbuild bench/heatmap.ts --bundle --platform=node --format=esm --log-level=error | node --input-type=module",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit"

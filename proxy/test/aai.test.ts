@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import mapFx from "./fixtures/map-almaty.json";
 import histFx from "./fixtures/history-almaty.json";
 import { Aai, UpstreamError, __resetCacheForTests, parseHistory, parseMap } from "../src/aai";
@@ -125,6 +125,32 @@ describe("Aai", () => {
     await expect(aai.map("almaty")).rejects.toThrow(UpstreamError);
     const s2 = setup(() => json({ hello: 1 }));
     await expect(s2.aai.history("almaty")).rejects.toThrow(UpstreamError);
+  });
+});
+
+describe("Aai error logging", () => {
+  beforeEach(() => __resetCacheForTests());
+  const mk = (fetchFn: typeof fetch) => new Aai("https://aai.test/v1", "SECRET-KEY", fetchFn, () => 1);
+
+  it("logs only the upstream status", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(mk((async () => new Response("boom", { status: 503 })) as typeof fetch).map("almaty")).rejects.toThrow();
+    expect(spy).toHaveBeenCalledTimes(1);
+    const line = spy.mock.calls.flat().join(" ");
+    expect(line).toContain("503");
+    for (const bad of ["SECRET-KEY", "aai.test", "city=", "lat", "lon"]) expect(line).not.toContain(bad);
+    spy.mockRestore();
+  });
+  it("logs only the error class name on a network failure", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const f = (async () => {
+      throw new DOMException("https://aai.test/v1?x-api-key=SECRET-KEY", "TimeoutError");
+    }) as typeof fetch;
+    await expect(mk(f).map("almaty")).rejects.toThrow();
+    const line = spy.mock.calls.flat().join(" ");
+    expect(line).toContain("TimeoutError");
+    for (const bad of ["SECRET-KEY", "aai.test", "city="]) expect(line).not.toContain(bad);
+    spy.mockRestore();
   });
 });
 
