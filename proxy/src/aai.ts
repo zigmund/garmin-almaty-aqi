@@ -69,7 +69,7 @@ export function parseHistory(json: unknown): History {
 }
 
 // Module-level cache keyed by full URL (the API key is sent in a header, never in the URL).
-const cache = new Map<string, { at: number; value: unknown }>();
+const cache = new Map<string, { at: number; value: Promise<unknown> }>();
 
 export function __resetCacheForTests(): void {
   cache.clear();
@@ -84,29 +84,37 @@ export class Aai {
   ) {}
 
   map(city: CityCode): Promise<MapSnapshot> {
-    return this.get(`${this.base}/v1/measurements/map?city=${city}`, parseMap);
+    return this.get(`${this.base}/measurements/map?city=${city}`, parseMap);
   }
 
   history(city: CityCode): Promise<History> {
-    return this.get(`${this.base}/v1/measurements/history?hours=6&city=${city}`, parseHistory);
+    return this.get(`${this.base}/measurements/history?hours=6&city=${city}`, parseHistory);
   }
 
-  private async get<T>(url: string, parse: (j: unknown) => T): Promise<T> {
+  private get<T>(url: string, parse: (j: unknown) => T): Promise<T> {
     const hit = cache.get(url);
-    if (hit && this.now() - hit.at < TTL_MS) return hit.value as T;
-    let value: T;
+    if (hit && this.now() - hit.at < TTL_MS) return hit.value as Promise<T>;
+    // Cache the in-flight promise so concurrent cold requests share one fetch;
+    // drop it on failure so errors are never cached.
+    const entry = { at: this.now(), value: this.fetchParsed(url, parse) as Promise<unknown> };
+    cache.set(url, entry);
+    entry.value.catch(() => {
+      if (cache.get(url) === entry) cache.delete(url);
+    });
+    return entry.value as Promise<T>;
+  }
+
+  private async fetchParsed<T>(url: string, parse: (j: unknown) => T): Promise<T> {
     try {
       const res = await this.fetchFn(url, {
         headers: { "x-api-key": this.key },
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
       if (!res.ok) throw new UpstreamError(`upstream status ${res.status}`);
-      value = parse(await res.json());
+      return parse(await res.json());
     } catch (e) {
       if (e instanceof UpstreamError) throw e;
       throw new UpstreamError(`upstream request failed: ${e instanceof Error ? e.name : "error"}`);
     }
-    cache.set(url, { at: this.now(), value });
-    return value;
   }
 }

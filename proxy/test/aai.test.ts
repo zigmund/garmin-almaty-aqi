@@ -65,21 +65,21 @@ describe("Aai", () => {
       return handler ? handler(url, init) : json(url.includes("/history") ? histFx : mapFx);
     }) as typeof fetch;
     let t = 1_000_000;
-    const aai = new Aai("https://aai.test", "test-key", fetchFn, () => t);
+    const aai = new Aai("https://aai.test/v1", "test-key", fetchFn, () => t);
     return { aai, calls, advance: (s: number) => (t += s * 1000) };
   }
 
   it("sends x-api-key and city", async () => {
     const { aai, calls } = setup();
     await aai.map("almaty");
-    expect(calls[0].url).toContain("city=almaty");
+    expect(calls[0].url).toBe("https://aai.test/v1/measurements/map?city=almaty");
     expect(new Headers(calls[0].init?.headers).get("x-api-key")).toBe("test-key");
     expect(calls[0].url).not.toContain("test-key");
   });
   it("history requests hours=6", async () => {
     const { aai, calls } = setup();
     const h = await aai.history("almaty");
-    expect(calls[0].url).toContain("hours=6");
+    expect(calls[0].url).toBe("https://aai.test/v1/measurements/history?hours=6&city=almaty");
     expect(h.hours.length).toBe(7);
   });
   it("caches within 300 s, refetches after", async () => {
@@ -95,11 +95,17 @@ describe("Aai", () => {
   it("shares cache across instances, separate per city", async () => {
     const a = setup();
     await a.aai.map("almaty");
-    await new Aai("https://aai.test", "test-key", (async () => {
+    await new Aai("https://aai.test/v1", "test-key", (async () => {
       throw new Error("should not fetch");
     }) as typeof fetch, () => 1_000_000).map("almaty");
     await a.aai.map("karaganda");
     expect(a.calls.length).toBe(2);
+  });
+  it("dedupes concurrent cold requests", async () => {
+    const { aai, calls } = setup();
+    const [a, b] = await Promise.all([aai.map("almaty"), aai.map("almaty")]);
+    expect(calls.length).toBe(1);
+    expect(a).toBe(b);
   });
   it("throws UpstreamError on 500 and does not cache it", async () => {
     const { aai, calls } = setup(() => new Response("boom", { status: 500 }));
