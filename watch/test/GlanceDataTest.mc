@@ -28,6 +28,37 @@ function glanceStalenessUsesRxTime(logger as Logger) as Boolean {
 }
 
 (:test)
+function stalenessUsesDataTimeFromAge(logger as Logger) as Boolean {
+    var now = 100000;
+    // Data 2400 s old when received just now: stale although rx is fresh.
+    var d = GlanceData.onReceive({"m" => "near", "aqi" => 80, "h" => [1], "a" => 2400}, now);
+    Test.assert(d != null);
+    Test.assertEqual(d["dt"], now - 2400);
+    Test.assert(GlanceData.isStale(d, now));
+    Test.assertEqual(GlanceData.ageMin(d, now), 40);
+    // Fresh data received a while ago: age grows from the data time.
+    var f = GlanceData.onReceive({"m" => "near", "aqi" => 80, "h" => [1], "a" => 120}, now);
+    Test.assert(!GlanceData.isStale(f, now));
+    Test.assertEqual(GlanceData.ageMin(f, now), 2);
+    Test.assert(GlanceData.isStale(f, now + 1700));
+    return true;
+}
+
+(:test)
+function missingOrBadAgeFallsBackToRx(logger as Logger) as Boolean {
+    var now = 100000;
+    var d = GlanceData.onReceive({"m" => "near", "aqi" => 80, "h" => [1]}, now);
+    Test.assertEqual(d["dt"], now);
+    Test.assert(!GlanceData.isStale(d, now));
+    var s = GlanceData.onReceive({"m" => "near", "aqi" => 80, "h" => [1], "a" => "x"}, now);
+    Test.assertEqual(s["dt"], now);
+    Test.assertEqual(GlanceData.dataTime(null, now), now);
+    Test.assertEqual(GlanceData.dataTime(60, now), now - 60);
+    Test.assertEqual(GlanceData.dataTime(-5, now), now);
+    return true;
+}
+
+(:test)
 function onReceiveAddsRxToMeasurements(logger as Logger) as Boolean {
     var d = GlanceData.onReceive({"m" => "near", "aqi" => 80, "h" => [1], "c" => "karaganda"}, 1234);
     Test.assert(d != null);

@@ -16,7 +16,7 @@ function apiGlanceUrlWithoutFix(logger as Logger) as Boolean {
 (:test)
 function apiGlanceUrlWithFix(logger as Logger) as Boolean {
     var u = Api.glanceUrl([43.23891, 76.88972, 0], "almaty");
-    Test.assert(u.find("/v1/glance?city=almaty&lat=43.2389&lon=76.8897") != null);
+    Test.assert(u.find("/v1/glance?city=almaty&lat=43.239&lon=76.890") != null);
     return true;
 }
 

@@ -5,7 +5,6 @@ devices="$1"; version="$2"; shift 2
 cat <<TXT
 AirMon $version for Garmin watches: one .prg per watch model.
 
-Most people should install AirMon from the Connect IQ Store instead.
 To side-load (developer install):
   1. Find your model below and take its .prg file.
   2. Connect the watch by USB. On macOS use OpenMTP (the watch is an MTP device);

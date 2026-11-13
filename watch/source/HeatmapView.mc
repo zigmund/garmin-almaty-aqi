@@ -148,13 +148,14 @@ class HeatmapView extends WatchUi.View {
             if (inUnit(mx) && inUnit(my)) { you = [mx, my]; }
         }
 
-        var t = System.getClockTime();
+        // Header time is the data time (receipt time minus the proxy's age), local clock.
+        var dt = Time.Gregorian.info(new Time.Moment(GlanceData.dataTime(data["a"], Time.now().value())), Time.FORMAT_SHORT);
         _grid = grid;
         _gw = w;
         _gh = h;
         _stations = stations;
         _me = you;
-        _time = t.hour.format("%02d") + ":" + t.min.format("%02d");
+        _time = dt.hour.format("%02d") + ":" + dt.min.format("%02d");
         return MAP;
     }
 
@@ -183,7 +184,7 @@ class HeatmapView extends WatchUi.View {
         HeatmapLog.renderMs(System.getTimer() - t0);
     }
 
-    // "AQI N" in its category colour plus the receipt time; returns the header's bottom y.
+    // "AQI N" in its category colour plus the data time; returns the header's bottom y.
     private function drawHeader(dc as Dc, withTime as Boolean) as Number {
         var font = Graphics.FONT_XTINY;
         var fh = dc.getFontHeight(font);

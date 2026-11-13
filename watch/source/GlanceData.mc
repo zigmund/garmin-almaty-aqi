@@ -1,6 +1,6 @@
 import Toybox.Lang;
 
-// Shape and freshness of the stored /v1/glance payload. "rx" is the receive time (Unix s).
+// Shape and freshness of the stored /v1/glance payload. "rx" is the receive time (Unix s); "dt" the data time = rx - "a" (age at response).
 (:glance, :background)
 module GlanceData {
     enum { NO_DATA, OUT, NEAR, CITY }
@@ -18,23 +18,36 @@ module GlanceData {
         return s;
     }
 
+    // Data time: "dt" if stored, else the receive time (payloads stored by older builds).
+    function stamp(d as Dictionary) as Number? {
+        var t = d["dt"];
+        if (!(t instanceof Number)) { t = d["rx"]; }
+        return t instanceof Number ? t : null;
+    }
+
+    // Unix time of the data: receive time minus the proxy's age "a"; a bad "a" means rx.
+    function dataTime(a as Object?, rxSec as Number) as Number {
+        return (a instanceof Number && a >= 0) ? rxSec - a : rxSec;
+    }
+
     function ageMin(d as Dictionary, nowSec as Number) as Number {
-        var rx = d["rx"];
-        if (!(rx instanceof Number)) { return NEVER_MIN; }
-        var age = nowSec - rx;
+        var t = stamp(d);
+        if (t == null) { return NEVER_MIN; }
+        var age = nowSec - t;
         return age < 0 ? 0 : age / 60;
     }
 
     function isStale(d as Dictionary, nowSec as Number) as Boolean {
-        var rx = d["rx"];
-        if (!(rx instanceof Number)) { return true; }
-        return nowSec - rx > STALE_SEC;
+        var t = stamp(d);
+        if (t == null) { return true; }
+        return nowSec - t > STALE_SEC;
     }
 
     // Dictionary to store for a background result, or null to keep the old one (errors, junk).
     function onReceive(data as Object?, nowSec as Number) as Dictionary? {
         if (!(data instanceof Dictionary) || !(data["m"] instanceof String)) { return null; }
         data["rx"] = nowSec;
+        data["dt"] = dataTime(data["a"], nowSec);
         return data;
     }
 
