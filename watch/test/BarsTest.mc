@@ -1,5 +1,6 @@
 import Toybox.Lang;
 import Toybox.Test;
+import Toybox.WatchUi;
 
 (:test)
 function barsScaleToAtLeast150(logger as Logger) as Boolean {
@@ -27,5 +28,12 @@ function barsHandleAllNullAndEmpty(logger as Logger) as Boolean {
     Test.assertEqual(r.size(), 3);
     for (var i = 0; i < r.size(); i++) { Test.assertEqual(r[i], -1); }
     Test.assertEqual(Bars.heights([], 30).size(), 0);
+    return true;
+}
+
+(:test)
+function ageStringsUseLangFormatPlaceholders(logger as Logger) as Boolean {
+    Test.assertEqual(Lang.format(WatchUi.loadResource(Rez.Strings.MinAgo) as String, [5]), "5 min ago");
+    Test.assertEqual(Lang.format(WatchUi.loadResource(Rez.Strings.MinShort) as String, [5]), "5m");
     return true;
 }
