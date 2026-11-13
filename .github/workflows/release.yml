@@ -75,8 +75,8 @@ jobs:
       # The watch talks to this Worker; a release pointing at localhost would be useless.
       - name: Check PROXY_URL
         run: |
-          if [ -z "$PROXY_URL" ] || [[ "$PROXY_URL" == *localhost* ]]; then
-            echo "::error::Repository variable PROXY_URL must be set to the deployed Worker URL (got '${PROXY_URL}')"
+          if [[ ! "$PROXY_URL" =~ ^https:// || "$PROXY_URL" == *localhost* || "$PROXY_URL" == *127.0.0.1* ]]; then
+            echo "::error::Repository variable PROXY_URL must be the deployed Worker URL, https:// and not localhost (got '${PROXY_URL}')"
             exit 1
           fi
 

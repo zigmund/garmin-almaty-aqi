@@ -1,8 +1,8 @@
 # AirMon
 
 AirMon is a Garmin Connect IQ widget that shows the current air quality in Almaty (and
-Karaganda) on your watch: a glance with the US AQI, the 6-hour trend and the nearest
-stations, and a full-screen heat map of the city with your position on it. Data comes from
+Karaganda) on your watch: a glance with the US AQI in its category colour, 6 hourly trend
+bars and a caption (city, or out of zone), and a full-screen heat map of the city with your position on it. Data comes from
 the community sensor network of the [Almaty Air Initiative](https://air.org.kz) through a
 small Cloudflare Worker that hides the API key and keeps the watch traffic tiny.
 
@@ -11,7 +11,8 @@ small Cloudflare Worker that hides the API key and keeps the watch traffic tiny.
 ## Reading the colors
 
 The index is the US AQI computed from PM2.5 (EPA 2024 breakpoints). Gray means no data or
-data older than 30 minutes (the glance then shows "N min ago").
+data older than 30 minutes, counted from the time of the measurement (the glance then
+shows "N min ago").
 
 | Category | AQI | Color |
 |---|---|---|
@@ -25,7 +26,7 @@ data older than 30 minutes (the glance then shows "N min ago").
 
 ## Install
 
-From the Connect IQ Store, or side-load: download the latest
+Side-load: download the latest
 [release](../../releases/latest), take your model's file from
 `AirMon-X.Y.Z-watch-prg.zip` (its README lists which file fits which watch), copy it to
 `GARMIN/APPS` on the watch over USB and add AirMon to the widget loop. Allow location and
@@ -88,4 +89,9 @@ A fork must set up:
 
 Code: MIT, see [LICENSE](LICENSE).
 
-Data: Almaty Air Initiative, CC BY 4.0.
+Data: [Almaty Air Initiative](https://air.org.kz), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+## Privacy
+
+The watch sends its position rounded to about 100 m (3 decimals) to the Worker, which does not log
+or store it; it only logs upstream error statuses.
