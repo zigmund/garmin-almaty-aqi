@@ -43,6 +43,7 @@ class HeatmapView extends WatchUi.View {
     }
 
     function onShow() as Void {
+        stopTimer();
         _requested = false;
         _state = LOADING;
         _timer = new Timer.Timer();
@@ -101,7 +102,14 @@ class HeatmapView extends WatchUi.View {
     private function accept(data as Dictionary) as Number {
         var m = data["m"];
         if (!(m instanceof String)) { return ERROR; }
-        if (m.equals("out")) { return OUT; }
+        if (m.equals("out")) {
+            // Out of zone is explicit: drop the held map so a later error shows NoData.
+            _grid = null;
+            _stations = [];
+            _me = null;
+            _time = null;
+            return OUT;
+        }
         if (!m.equals("near") && !m.equals("city")) { return ERROR; }
         var c = data["c"];
         if (c instanceof String) { Store.setLastCity(c); }
@@ -187,7 +195,7 @@ class HeatmapView extends WatchUi.View {
         if ((st == GlanceData.NEAR || st == GlanceData.CITY) && gd != null) {
             var n = gd["aqi"] as Number;
             aqiText = "AQI " + n;
-            aqiColor = Aqi.color(Aqi.category(n));
+            aqiColor = GlanceData.isStale(gd, Time.now().value()) ? Aqi.GRAY : Aqi.color(Aqi.category(n));
         }
         var timeText = withTime ? _time : null;
         var gap = "  ";
