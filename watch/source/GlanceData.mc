@@ -30,4 +30,19 @@ module GlanceData {
         if (!(rx instanceof Number)) { return true; }
         return nowSec - rx > STALE_SEC;
     }
+
+    // Dictionary to store for a background result, or null to keep the old one (errors, junk).
+    function onReceive(data as Object?, nowSec as Number) as Dictionary? {
+        if (!(data instanceof Dictionary) || !(data["m"] instanceof String)) { return null; }
+        data["rx"] = nowSec;
+        return data;
+    }
+
+    // City to remember for the next request: only when the proxy resolved to one (near/city).
+    function cityToStore(d as Dictionary) as String? {
+        var m = d["m"];
+        var c = d["c"];
+        if (m instanceof String && (m.equals("near") || m.equals("city")) && c instanceof String) { return c; }
+        return null;
+    }
 }

@@ -26,3 +26,35 @@ function glanceStalenessUsesRxTime(logger as Logger) as Boolean {
     Test.assert(GlanceData.ageMin({}, now) >= 9999);
     return true;
 }
+
+(:test)
+function onReceiveAddsRxToMeasurements(logger as Logger) as Boolean {
+    var d = GlanceData.onReceive({"m" => "near", "aqi" => 80, "h" => [1], "c" => "karaganda"}, 1234);
+    Test.assert(d != null);
+    Test.assertEqual(d["rx"], 1234);
+    Test.assertEqual(d["aqi"], 80);
+    var o = GlanceData.onReceive({"m" => "out"}, 99);
+    Test.assert(o != null);
+    Test.assertEqual(o["rx"], 99);
+    return true;
+}
+
+(:test)
+function onReceiveIgnoresErrorsAndGarbage(logger as Logger) as Boolean {
+    Test.assert(GlanceData.onReceive({"err" => 500}, 1234) == null);
+    Test.assert(GlanceData.onReceive(null, 1234) == null);
+    Test.assert(GlanceData.onReceive({"x" => 1}, 1234) == null);
+    return true;
+}
+
+(:test)
+function onReceiveCityOnlyForNearAndCity(logger as Logger) as Boolean {
+    var n = {"m" => "near", "aqi" => 80, "h" => [1], "c" => "karaganda"};
+    var o = {"m" => "out", "c" => "almaty"};
+    Test.assert(GlanceData.cityToStore(n) != null);
+    Test.assertEqual(GlanceData.cityToStore(n), "karaganda");
+    Test.assert(GlanceData.cityToStore({"m" => "city", "c" => "almaty"}) != null);
+    Test.assert(GlanceData.cityToStore(o) == null);
+    Test.assert(GlanceData.cityToStore({"m" => "near"}) == null);
+    return true;
+}
