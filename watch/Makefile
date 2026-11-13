@@ -1,6 +1,7 @@
 # Connect IQ watch app build.
 # SDK: read from the SDK manager config locally; CI passes SDK=/connectiq (Docker image).
 SDK     ?= $(shell cat "$(HOME)/Library/Application Support/Garmin/ConnectIQ/current-sdk.cfg" 2>/dev/null)
+DEVICES_DIR ?= $(HOME)/Library/Application Support/Garmin/ConnectIQ/Devices
 KEY     ?= $(HOME)/.connectiq/developer_key.der
 DEVICE  ?= fenix6pro
 # RELEASE=1: optimized build without debug info (for side-loading onto a watch).
@@ -19,8 +20,9 @@ GEN     := gen/BuildInfo.mc
 SRC     := $(shell find source test resources* -type f) manifest.xml monkey.jungle test.jungle $(GEN)
 PRG     := bin/$(DEVICE)/$(NAME).prg
 PROXY_URL ?= http://localhost:8787
+DIST    := dist
 
-.PHONY: build build-all test sim iq clean FORCE
+.PHONY: build build-all test sim iq dist set-manifest-version clean FORCE
 
 build: $(PRG)
 
@@ -46,6 +48,23 @@ iq: $(GEN)
 	@mkdir -p bin
 	$(MONKEYC) -f monkey.jungle -e -r -w -o bin/$(NAME).iq -y "$(KEY)"
 
+# Release files: the store package and a zip of per-model .prg files with a README.
+dist: iq
+	$(MAKE) build-all RELEASE=1
+	rm -rf $(DIST) bin/prg
+	mkdir -p $(DIST) bin/prg
+	@for d in $(PRODUCTS); do cp bin/$$d/$(NAME).prg bin/prg/$$d.prg; done
+	sh scripts/prg-readme.sh "$(DEVICES_DIR)" "$(VERSION)" $(PRODUCTS) > bin/prg/README.txt
+	cd bin/prg && zip -q -X ../../$(DIST)/$(NAME)-$(VERSION)-watch-prg.zip README.txt *.prg
+	cp bin/$(NAME).iq $(DIST)/$(NAME)-$(VERSION).iq
+	@ls -l $(DIST)
+
+# CI only: stamp VERSION (X.Y.Z) into the manifest; the store needs it to grow per upload.
+set-manifest-version:
+	@echo "$(VERSION)" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "VERSION must be X.Y.Z, got '$(VERSION)'" >&2; exit 1; }
+	sed -i.bak '/<iq:application/s/ version="[^"]*"/ version="$(VERSION)"/' manifest.xml && rm manifest.xml.bak
+	@grep -o '<iq:application[^>]*version="[^"]*"' manifest.xml | grep -o 'version="[^"]*"$$'
+
 # Unit-test build, run in the simulator; fails if any test fails.
 test: $(GEN)
 	@mkdir -p bin
@@ -57,4 +76,4 @@ sim: $(PRG)
 	"$(SDK)/bin/monkeydo" $(PRG) $(DEVICE)
 
 clean:
-	rm -rf bin gen
+	rm -rf bin gen $(DIST)

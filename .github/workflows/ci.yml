@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+# bash -eo pipefail: a failing command in a pipe fails the step.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  proxy:
+    name: Proxy (Cloudflare Worker)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: proxy
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: proxy/package-lock.json
+
+      - run: npm ci
+
+      # Tests run on recorded fixtures: no AAI API key is needed or available here.
+      - run: npm test
+
+      - run: npm run typecheck
+
+  watch:
+    name: Watch app (sample devices)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Pull requests from forks get no secrets: sign these check builds with a throwaway key.
+      - name: Throwaway developer key
+        run: |
+          mkdir -p "$RUNNER_TEMP/key"
+          openssl genrsa -out "$RUNNER_TEMP/key/key.pem" 4096
+          openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt \
+            -in "$RUNNER_TEMP/key/key.pem" -out "$RUNNER_TEMP/key/developer_key.der"
+
+      # 260 and 240 MIP, 454 AMOLED.
+      - name: Build
+        run: |
+          for d in fenix6pro fenix6s fenix847mm; do
+            scripts/ciq-docker.sh "$RUNNER_TEMP/key" build DEVICE="$d" RELEASE=1 \
+              VERSION=0.0.0 COMMIT="${GITHUB_SHA::7}"
+          done

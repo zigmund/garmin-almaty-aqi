@@ -1,2 +1,5 @@
 project.manifest = manifest.xml
 base.sourcePath = source;gen
+
+# Launcher icon at the device's native size (base resources carry the 40x40 one).
+fenix847mm.resourcePath = $(fenix847mm.resourcePath);resources-icon65

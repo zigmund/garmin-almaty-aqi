@@ -48,7 +48,7 @@ Query parameters (both endpoints):
 ### `GET /v1/heatmap`
 
 - `{"m":"out"}` or
-  `{"m":"near"|"city","c","bbox":[w,s,e,n],"w":24,"h":24,"g":"...","s":[[lat,lon,cat],...],"me":[lat,lon],"t"}`
+  `{"m":"near"|"city","c","bbox":[w,s,e,n],"w":24,"h":24,"g":"...","s":[[lat,lon,cat],...],"me":[x,y],"t"}`
 - `g`: base64 of `w*h` bytes, row-major from the north-west corner; each byte
   is an AQI category 0-5, or 255 for a cell with no data within 3 km.
 - `s`: station dots with their category; `me`: your position as [x, y] fractions (0-1) of the bbox from its north-west corner, present only when inside the bbox.
