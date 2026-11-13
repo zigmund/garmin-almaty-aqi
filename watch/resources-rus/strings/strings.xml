@@ -4,5 +4,6 @@
     <string id="OutOfZone">Вне зоны покрытия</string>
     <string id="City">город</string>
     <string id="MinAgo">%1$ мин назад</string>
+    <string id="MinShort">%1$м</string>
     <string id="Loading">Загрузка…</string>
 </strings>

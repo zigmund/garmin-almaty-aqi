@@ -4,5 +4,6 @@
     <string id="OutOfZone">Out of coverage</string>
     <string id="City">city</string>
     <string id="MinAgo">%1$ min ago</string>
+    <string id="MinShort">%1$m</string>
     <string id="Loading">Loading…</string>
 </strings>

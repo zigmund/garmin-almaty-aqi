@@ -37,38 +37,57 @@ class AirGlanceView extends WatchUi.GlanceView {
         var barsX = barsLeft(hist.size(), w);
         var availW = barsX - h / 8;  // left column: up to the bars minus a margin
 
-        // Caption: one line, "city" or "N min ago" (age wins when stale: it is the longer one).
-        var sub = null;
-        if (stale) {
-            sub = Lang.format(WatchUi.loadResource(Rez.Strings.MinAgo) as String, [GlanceData.ageMin(d, now)]);
-        } else if (st == GlanceData.CITY) {
-            sub = WatchUi.loadResource(Rez.Strings.City) as String;
-        }
+        // Caption lines: "city" in CITY mode (never dropped), then the age when stale.
         var subFont = Graphics.FONT_XTINY;
-        var subH = sub == null ? 0 : dc.getFontHeight(subFont);
-        if (sub != null && dc.getTextWidthInPixels(sub, subFont) > availW) { sub = null; subH = 0; }
-
-        // Largest number font that fits both the height (with caption) and the column width.
-        var text = aqi.toString();
-        var fonts = [Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_NUMBER_MILD, Graphics.FONT_MEDIUM];
-        var numFont = fonts[fonts.size() - 1];
-        for (var i = 0; i < fonts.size(); i++) {
-            if (dc.getFontHeight(fonts[i]) + subH <= h && dc.getTextWidthInPixels(text, fonts[i]) <= availW) {
-                numFont = fonts[i];
-                break;
-            }
+        var subH = dc.getFontHeight(subFont);
+        var city = st == GlanceData.CITY ? WatchUi.loadResource(Rez.Strings.City) as String : null;
+        var age = null;
+        var shortAge = null;
+        if (stale) {
+            var mins = GlanceData.ageMin(d, now);
+            var m = mins == GlanceData.NEVER_MIN ? "?" : mins.toString();
+            age = Lang.format(WatchUi.loadResource(Rez.Strings.MinAgo) as String, [m]);
+            shortAge = Lang.format(WatchUi.loadResource(Rez.Strings.MinShort) as String, [m]);
+            if (dc.getTextWidthInPixels(age, subFont) > availW) { age = shortAge; }
         }
+        var lines = [];
+        if (city != null) { lines.add(city); }
+        if (age != null) { lines.add(age); }
+
+        // Largest number font that fits the height (with all caption lines) and the column width.
+        var text = aqi.toString();
+        var fonts = [Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_NUMBER_MILD, Graphics.FONT_MEDIUM, Graphics.FONT_SMALL];
+        var numFont = pickFont(dc, fonts, text, lines.size() * subH, availW, h);
+        if (numFont == null && lines.size() == 2) {
+            // Two lines do not fit: merge into one; if still too wide, the city alone (it always wins).
+            var merged = (city as String) + " " + (shortAge as String);
+            lines = [dc.getTextWidthInPixels(merged, subFont) <= availW ? merged : city];
+            numFont = pickFont(dc, fonts, text, subH, availW, h);
+        }
+        if (numFont == null) { numFont = fonts[fonts.size() - 1]; }
+        subH = lines.size() * subH;
         var numH = dc.getFontHeight(numFont);
         var top = (h - numH - subH) / 2;
         if (top < 0) { top = 0; }
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         dc.drawText(0, top, numFont, text, Graphics.TEXT_JUSTIFY_LEFT);
-        if (sub != null) {
-            dc.setColor(Aqi.GRAY, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(0, top + numH, subFont, sub, Graphics.TEXT_JUSTIFY_LEFT);
+        dc.setColor(Aqi.GRAY, Graphics.COLOR_TRANSPARENT);
+        var lineH = dc.getFontHeight(subFont);
+        for (var i = 0; i < lines.size(); i++) {
+            dc.drawText(0, top + numH + i * lineH, subFont, lines[i], Graphics.TEXT_JUSTIFY_LEFT);
         }
 
         drawBars(dc, hist, stale, w, h);
+    }
+
+    // First font whose height plus captionH fits in h and whose text fits availW, else null.
+    private function pickFont(dc as Dc, fonts as Array, text as String, captionH as Number, availW as Number, h as Number) as Graphics.FontType? {
+        for (var i = 0; i < fonts.size(); i++) {
+            if (dc.getFontHeight(fonts[i]) + captionH <= h && dc.getTextWidthInPixels(text, fonts[i]) <= availW) {
+                return fonts[i];
+            }
+        }
+        return null;
     }
 
     // Bar geometry: the bars take the right ~45% of the width, with a fixed gap.
