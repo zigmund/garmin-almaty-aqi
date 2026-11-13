@@ -1,0 +1,8 @@
+<strings>
+    <string id="AppName">AirMon</string>
+    <string id="NoData">No data</string>
+    <string id="OutOfZone">Out of coverage</string>
+    <string id="City">city</string>
+    <string id="MinAgo">%1$ min ago</string>
+    <string id="Loading">Loading…</string>
+</strings>
