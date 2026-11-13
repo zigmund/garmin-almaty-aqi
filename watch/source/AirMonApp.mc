@@ -5,13 +5,6 @@ import Toybox.Time;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-(:glance)
-class AirMonGlanceView extends WatchUi.GlanceView {
-    function initialize() {
-        GlanceView.initialize();
-    }
-}
-
 (:glance, :background)
 class AirMonApp extends Application.AppBase {
     function initialize() {
@@ -44,6 +37,6 @@ class AirMonApp extends Application.AppBase {
 
     (:glance)
     function getGlanceView() as [GlanceView] or [GlanceView, GlanceViewDelegate] or Null {
-        return [new AirMonGlanceView()];
+        return [new AirGlanceView()];
     }
 }
