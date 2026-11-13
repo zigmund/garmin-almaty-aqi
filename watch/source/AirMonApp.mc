@@ -32,7 +32,7 @@ class AirMonApp extends Application.AppBase {
     }
 
     function getInitialView() as [Views] or [Views, InputDelegates] {
-        return [new WatchUi.View()];
+        return [new HeatmapView(), new HeatmapDelegate()];
     }
 
     (:glance)
