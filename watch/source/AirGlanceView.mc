@@ -73,44 +73,58 @@ class AirGlanceView extends WatchUi.GlanceView {
         }
 
         // Bottom row: the largest number font that fits the height, then the word in the same font
-        // or in the small one, longest form that keeps the row within the width minus the margin.
+        // or in the small one, longest form that keeps the row within the width minus the margin;
+        // failing that, a category name on two small lines; failing that, no word (never clipped).
         // The age is always small, like the unit, so it does not read as a second value.
         var text = aqi.toString();
         var unit = WatchUi.loadResource(Rez.Strings.Unit) as String;
         var unitW = dc.getTextWidthInPixels(unit, small);
         var scaleH = BAR_H + 2 * TICK_OUT;
+        var fixedH = lineH + 3 + scaleH + 2;
         var margin = w * ROW_MARGIN_PCT / 100;
         if (margin < ROW_MARGIN_MIN) { margin = ROW_MARGIN_MIN; }
         var rowW = w - margin;
         var fonts = [Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_XTINY];
-        var numFont = small;
+        var numFont = null;
         var wordFont = small;
-        var word = words[words.size() - 1] as String;
-        var found = false;
-        for (var f = 0; f < fonts.size() && !found; f++) {
+        var word = null;    // String, or [String, String] for two lines, or null for none
+        for (var f = 0; f < fonts.size() && word == null; f++) {
             var nf = fonts[f];
-            if (lineH + 3 + scaleH + 2 + dc.getFontHeight(nf) > h) { continue; }
-            var head = dc.getTextWidthInPixels(text, nf) + UNIT_GAP + unitW + WORD_GAP;
+            var nh = dc.getFontHeight(nf);
+            if (fixedH + nh > h) { continue; }
+            if (numFont == null) { numFont = nf; }    // the no-word fallback: largest that fits
+            var avail = rowW - (dc.getTextWidthInPixels(text, nf) + UNIT_GAP + unitW + WORD_GAP);
             var wfs = stale ? [small] : [nf, small];
-            for (var k = 0; k < wfs.size() && !found; k++) {
+            for (var k = 0; k < wfs.size() && word == null; k++) {
                 for (var i = 0; i < words.size(); i++) {
-                    if (head + dc.getTextWidthInPixels(words[i] as String, wfs[k]) <= rowW) {
+                    if (dc.getTextWidthInPixels(words[i] as String, wfs[k]) <= avail) {
                         numFont = nf;
                         wordFont = wfs[k];
-                        word = words[i] as String;
-                        found = true;
+                        word = words[i];
                         break;
                     }
                 }
             }
+            if (word != null || stale || fixedH + (nh > 2 * lineH ? nh : 2 * lineH) > h) { continue; }
+            for (var i = 0; i < words.size(); i++) {
+                var p = GlanceData.splitTwo(words[i] as String);
+                if (p != null && dc.getTextWidthInPixels(p[0], small) <= avail && dc.getTextWidthInPixels(p[1], small) <= avail) {
+                    numFont = nf;
+                    word = p;
+                    break;
+                }
+            }
         }
+        if (numFont == null) { numFont = small; }
 
         var numH = dc.getFontHeight(numFont);
-        var top = (h - (lineH + 3 + scaleH + 2 + numH)) / 2;
+        var blockH = (word instanceof Array && 2 * lineH > numH) ? 2 * lineH : numH;
+        var top = (h - (fixedH + blockH)) / 2;
         if (top < 0) { top = 0; }
         var barY = top + lineH + 3 + TICK_OUT;
-        var rowY = top + lineH + 3 + scaleH + 2;
-        var baseline = rowY + Graphics.getFontAscent(numFont);
+        var rowY = top + fixedH;
+        var numY = rowY + (blockH - numH) / 2;
+        var baseline = numY + Graphics.getFontAscent(numFont);
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(0, top, small, title, Graphics.TEXT_JUSTIFY_LEFT);
@@ -119,12 +133,18 @@ class AirGlanceView extends WatchUi.GlanceView {
 
         var fg = stale ? Aqi.GRAY : Graphics.COLOR_WHITE;
         dc.setColor(fg, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(0, rowY, numFont, text, Graphics.TEXT_JUSTIFY_LEFT);
-        // Unit and word sit on the number's baseline.
+        dc.drawText(0, numY, numFont, text, Graphics.TEXT_JUSTIFY_LEFT);
+        // Unit and a one-line word sit on the number's baseline; two lines fill the row block.
         var x = dc.getTextWidthInPixels(text, numFont) + UNIT_GAP;
         dc.drawText(x, baseline - Graphics.getFontAscent(small), small, unit, Graphics.TEXT_JUSTIFY_LEFT);
         x += unitW + WORD_GAP;
-        dc.drawText(x, baseline - Graphics.getFontAscent(wordFont), wordFont, word, Graphics.TEXT_JUSTIFY_LEFT);
+        if (word instanceof Array) {
+            var y = rowY + (blockH - 2 * lineH) / 2;
+            dc.drawText(x, y, small, word[0] as String, Graphics.TEXT_JUSTIFY_LEFT);
+            dc.drawText(x, y + lineH, small, word[1] as String, Graphics.TEXT_JUSTIFY_LEFT);
+        } else if (word != null) {
+            dc.drawText(x, baseline - Graphics.getFontAscent(wordFont), wordFont, word as String, Graphics.TEXT_JUSTIFY_LEFT);
+        }
     }
 
     // The 6 category segments (gray when stale) and the marker at the value, with a dark gap around it.
