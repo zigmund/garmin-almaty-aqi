@@ -19,7 +19,7 @@ COMMIT  ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)$(shel
 GEN     := gen/BuildInfo.mc
 SRC     := $(shell find source test resources* -type f) manifest.xml monkey.jungle test.jungle $(GEN)
 PRG     := bin/$(DEVICE)/$(NAME).prg
-PROXY_URL ?= https://airmon-proxy.zigmund.workers.dev
+PROXY_URL ?= https://garmin-almaty-aqi.zigmund.xyz
 DIST    := dist
 
 .PHONY: build build-all test sim iq dist set-manifest-version clean FORCE
