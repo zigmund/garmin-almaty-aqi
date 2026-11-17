@@ -1,5 +1,5 @@
 [Unit]
-Description=airmon-server (air quality API for the AirMon Garmin widget)
+Description=airmon-server (air quality API for the Almaty AQI Garmin widget)
 After=network-online.target
 Wants=network-online.target
 

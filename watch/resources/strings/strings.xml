@@ -1,5 +1,5 @@
 <strings>
-    <string id="AppName">AirMon</string>
+    <string id="AppName">Almaty AQI</string>
     <string id="NoData" scope="glance">No data</string>
     <string id="OutOfZone" scope="glance">Out of coverage</string>
     <string id="NoPos" scope="glance">No location — open the widget</string>

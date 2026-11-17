@@ -1,6 +1,6 @@
-# AirMon
+# Almaty AQI
 
-AirMon is a Garmin Connect IQ widget that shows the current air quality in Almaty (and
+Almaty AQI is a Garmin Connect IQ widget that shows the current air quality in Almaty (and
 Karaganda) on your watch: a glance with a colour scale of the AQI categories and a marker at
 the current value, the US AQI number and the category name (or "out of coverage"), and a
 full-screen map of the city. The glance shows one value for the whole city, as on
@@ -39,8 +39,8 @@ instead, with a mark for your position that is computed on the watch.
 
 Side-load: download the latest
 [release](../../releases/latest), take your model's file from
-`AirMon-X.Y.Z-watch-prg.zip` (its README lists which file fits which watch), copy it to
-`GARMIN/APPS` on the watch over USB and add AirMon to the widget loop. Allow location and
+`AlmatyAQI-X.Y.Z-watch-prg.zip` (its README lists which file fits which watch), copy it to
+`GARMIN/APPS` on the watch over USB and add Almaty AQI to the widget loop. Allow location and
 background access when asked.
 
 Supported: 22 round-display models (fenix 6 family, fenix 8 47 mm, Forerunner 245/745/945,
@@ -175,8 +175,8 @@ server (for a local one, `PROXY_URL=http://localhost:8790` with the server binar
 
 Actions -> **Release** -> Run workflow (on `main`), choose `patch` / `minor` / `major`. It
 builds every model and the store package and creates tag `vX.Y.Z` with a GitHub release:
-`AirMon-X.Y.Z.iq` (upload it by hand at the Connect IQ developer dashboard) and
-`AirMon-X.Y.Z-watch-prg.zip`. CI (every push and pull request) runs the proxy tests and
+`AlmatyAQI-X.Y.Z.iq` (upload it by hand at the Connect IQ developer dashboard) and
+`AlmatyAQI-X.Y.Z-watch-prg.zip`. CI (every push and pull request) runs the proxy tests and
 watch builds for fenix6pro, fenix6s and fenix847mm.
 
 A fork must set up:

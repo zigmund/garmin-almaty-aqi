@@ -121,5 +121,5 @@ jobs:
           ls -l assets
           gh release create "v$VERSION" assets/* \
             --target "$GITHUB_SHA" \
-            --title "AirMon $VERSION" \
+            --title "Almaty AQI $VERSION" \
             --generate-notes
