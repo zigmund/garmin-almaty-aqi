@@ -3,9 +3,10 @@
 AirMon is a Garmin Connect IQ widget that shows the current air quality in Almaty (and
 Karaganda) on your watch: a glance with a colour scale of the AQI categories and a marker at
 the current value, the US AQI number and the category name (or "out of coverage"), and a
-full-screen map of the city with your position on it. Data comes from
-the community sensor network of the [Almaty Air Initiative](https://air.org.kz) through a
-small Cloudflare Worker that hides the API key and keeps the watch traffic tiny.
+full-screen map of the city. The glance shows one value for the whole city, as on
+dashboard.air.org.kz, not a value for your location. Data comes from the community sensor
+network of the [Almaty Air Initiative](https://air.org.kz) through a small self-hosted Go
+server that hides the API key, caches responses and keeps the watch traffic tiny.
 
 ![Glance](assets/glance.png) ![Heat map](assets/heatmap.png)
 
@@ -29,9 +30,10 @@ grays out its scale and shows "N min ago" instead of the category name).
 
 Opening the widget shows the city. On watches with Garmin maps it is the watch's own map with a
 dot per station in its category colour (the dots are dithered, so the map shows through and
-dense areas read like a heat map) and a ring for your position. Press SELECT to pan and zoom
-with the buttons, BACK to return to the whole city, BACK again to leave. Watches without maps
-show a grid heat map of the city instead.
+dense areas read like a heat map). There is no ring for your position on these maps: the
+watch's own arrow shows it. Press SELECT to pan and zoom with the buttons, BACK to return to
+the whole city, BACK again to leave. Watches without maps show a grid heat map of the city
+instead, with a mark for your position that is computed on the watch.
 
 ## Install
 
@@ -47,20 +49,110 @@ MARQ, Descent Mk2, Enduro).
 ## How it works
 
 ```
-watch (glance / widget)  -->  Cloudflare Worker (proxy/)  -->  Almaty Air Initiative API
-   background refresh          5 min cache, API key            PM2.5 stations
+watch (glance / widget)  -->  airmon-server (server/)  -->  Almaty Air Initiative API
+   background refresh          cache, API key, budget       PM2.5 stations
    every 5 minutes             compact JSON
 ```
 
-The watch sends its position (or the chosen city) to the Worker, which picks the nearest
-stations (5 km, up to 3; a single station within 15 km otherwise), converts PM2.5 to AQI and
-returns short-keyed JSON. The heat map is a 24x24 grid of categories built the same way
-(3 km range per cell).
+The watch asks the server for the city it is in. It sends its position (rounded to about
+100 m) and the server only decides which city it falls into: Almaty, Karaganda or out of
+coverage (`nopos` when the watch has no position yet). The glance is one value per city: for
+Almaty the average of the district values AAI publishes (the number dashboard.air.org.kz
+shows), for Karaganda the mean of the stations. The heat map is a 24x24 grid of categories
+built from the stations (3 km range per cell); the position mark on it is computed on the
+watch. The server logs no positions.
 
-## Your own proxy
+## Self-hosting the server
 
-The watch app needs a Worker. Deploy your own from [proxy/](proxy/README.md) (you need an
-AAI API key), then build the watch app with `PROXY_URL=https://your-worker.example`.
+`server/` is a Go server that replaces the Worker. It serves `/v1/glance` and `/v1/heatmap`
+(with a changed response format, see below) and is self-hosted. It keeps the AAI API key on the server (read from a file, never from
+the config or the image), caches ready responses (15 minutes fresh, served stale for up to
+2 hours when AAI is unreachable) and spends AAI requests from a hard budget of 80 per sliding
+hour (`budget.per_hour`, at most 100) so a personal API key stays far below the provider's
+limit. `GET /healthz` answers 200 without calling AAI.
+
+The API is not the Worker's API any more: the `h`, `st`, `fb` and `me` fields are gone and
+the `nopos` answer is new. Old watch builds do not work with the new server, and new watch
+builds do not work with the old Worker; build the watch app against the server you deploy
+(see the nginx section for `PROXY_URL`). The Cloudflare Worker in `proxy/` is the legacy
+proxy that this server replaces; it still exists in the repository for now.
+
+Config: copy [server/deploy/config.example.yaml](server/deploy/config.example.yaml) to
+`/etc/airmon-server/config.yaml`; only `aai.key_file` is required, everything else has a
+default. Flags: `-config PATH`, `-version`.
+
+The server logs each upstream request at info level (path, status, duration, outcome; never
+the query string, headers or the key) and its effective non-secret settings at startup.
+
+The default `cache.backend: memory` keeps everything in one process: the AAI budget is per
+process (N replicas spend up to N x 80 requests per hour), and a restart resets the in-memory
+budget and the failure cooldown. Every deployment that uses the same personal AAI key,
+dev and test runs included, must share one Redis (`cache.backend: redis`), otherwise the
+key's real limit can be exceeded.
+
+### systemd
+
+```sh
+make -C server build                      # server/bin/airmon-server (or take a release archive)
+install -m 0755 server/bin/airmon-server /usr/local/bin/
+install -d /etc/airmon-server
+install -m 0644 server/deploy/config.example.yaml /etc/airmon-server/config.yaml
+install -m 0600 -o root -g root /dev/null /etc/airmon-server/aai_key   # then put the key in it
+install -m 0644 server/deploy/airmon-server.service /etc/systemd/system/
+systemctl daemon-reload && systemctl enable --now airmon-server
+```
+
+The unit runs as a dynamic unprivileged user and hands the key over with
+`LoadCredential=`, so `aai.key_file` stays `/run/credentials/airmon-server.service/aai_key`.
+After changing the config or the key use `systemctl restart airmon-server`.
+
+### Docker and Kubernetes
+
+```sh
+docker build -t airmon-server --build-arg VERSION=0.0.0 server/
+docker run --rm -p 8790:8790 \
+  -v $PWD/config.yaml:/etc/airmon-server/config.yaml:ro \
+  -v $PWD/aai_key:/run/secrets/aai_key:ro airmon-server
+```
+
+In the config set `listen: 0.0.0.0:8790` and `aai.key_file: /run/secrets/aai_key`. The key is
+not in the image: in Kubernetes mount a Secret as a file at that path. The image runs as
+uid/gid 65532 (distroless `nonroot`), so the key file must be readable by it: `chown 65532` it
+on the host (mode 0400/0600), or in Kubernetes set the Secret volume `defaultMode: 0440` with
+`securityContext.fsGroup: 65532`. With several replicas
+use `cache.backend: redis` (and `redis.addr`) so they share the cache, locks and the AAI
+budget. Release images are built by goreleaser for Docker Hub as `<user>/airmon-server`
+(linux/amd64 and linux/arm64, tags `X.Y.Z` and `latest`).
+
+### nginx
+
+The server speaks plain HTTP on `127.0.0.1:8790`; terminate TLS in nginx:
+
+```nginx
+location /v1/ {
+    proxy_pass http://127.0.0.1:8790;
+    access_log off;   # the query string carries the watch position
+}
+```
+
+`access_log off;` matters: the default log format records `$request`, which includes the
+query string with the position. If you need an access log, use a `log_format` without `$args`
+and `$request`.
+
+Build the watch app with `PROXY_URL=https://your-host.example` (the watch app is built
+against exactly one server: the default URL points at the legacy Worker).
+
+### Releases
+
+[.goreleaser.yaml](.goreleaser.yaml) builds the server for linux and darwin (amd64, arm64)
+into archives with checksums and builds the Docker Hub images. It runs on tags `v*` (shared
+with the watch releases), started manually: `DOCKERHUB_IMAGE=<user>/airmon-server goreleaser release --clean`.
+
+## Legacy Cloudflare Worker
+
+[proxy/](proxy/README.md) is the previous Cloudflare Worker implementation of the API. It is
+being replaced by the server above and is not the way to run the app. Its API differs from
+the server's, so a watch build must match the backend it talks to.
 
 ## Build
 
@@ -75,7 +167,8 @@ make -C watch dist VERSION=0.0.0  # watch/dist: store package (.iq) + zip of per
 npm --prefix proxy test         # proxy tests (fixtures, no API key needed)
 ```
 
-`PROXY_URL` defaults to the public Worker; use `PROXY_URL=http://localhost:8787` with `npm run dev` in `proxy/`.
+`PROXY_URL` defaults to the legacy public Worker, which speaks the old API; set it to your
+server (for a local one, `PROXY_URL=http://localhost:8790` with the server binary running).
 `scripts/ciq-docker.sh KEY_DIR <make args>` runs a watch build in the same Docker image as CI.
 
 ## Releases
@@ -88,7 +181,7 @@ watch builds for fenix6pro, fenix6s and fenix847mm.
 
 A fork must set up:
 
-- repository variable `PROXY_URL`: the deployed Worker URL. The release fails if it is empty
+- repository variable `PROXY_URL`: the deployed server URL. The release fails if it is empty
   or contains `localhost`;
 - secret `CIQ_DEVELOPER_KEY_BASE64` in the environment `release` (limited to `main`):
   `base64 -i ~/.connectiq/developer_key.der | pbcopy`. Store updates must be signed with the
@@ -102,5 +195,7 @@ Data: [Almaty Air Initiative](https://air.org.kz), [CC BY 4.0](https://creativec
 
 ## Privacy
 
-The watch sends its position rounded to about 100 m (3 decimals) to the Worker, which does not log
-or store it; it only logs upstream error statuses.
+The watch sends its position rounded to about 100 m (3 decimals) to the server. The server
+uses it only to pick the city and does not log or store it; it logs upstream requests and
+errors. The reverse proxy in front of it must not log it either: with nginx set
+`access_log off;` for the location (or use a `log_format` without `$args`), as shown above.
