@@ -42,15 +42,15 @@ class AirGlanceView extends WatchUi.GlanceView {
                     break;
                 }
             }
-            drawMessage(dc, title, msg, h, lineH);
+            drawMessage(dc, title, msg, h, lineH, false);
             return;
         }
         if ((st != GlanceData.CITY && st != GlanceData.OUT) || d == null) {
-            drawMessage(dc, title, WatchUi.loadResource(Rez.Strings.NoData) as String, h, lineH);
+            drawMessage(dc, title, WatchUi.loadResource(Rez.Strings.NoData) as String, h, lineH, false);
             return;
         }
         if (st == GlanceData.OUT) {
-            drawMessage(dc, title, "○ " + (WatchUi.loadResource(Rez.Strings.OutOfZone) as String), h, lineH);
+            drawMessage(dc, title, WatchUi.loadResource(Rez.Strings.OutOfZone) as String, h, lineH, true);
             return;
         }
 
@@ -144,12 +144,26 @@ class AirGlanceView extends WatchUi.GlanceView {
         dc.fillRectangle(left, barY - TICK_OUT, TICK_W, BAR_H + 2 * TICK_OUT);
     }
 
-    // Title line plus one message line, vertically centered.
-    private function drawMessage(dc as Dc, title as String, msg as String, h as Number, lineH as Number) as Void {
+    // Title line plus one message line, vertically centered. ring: a hollow circle before the
+    // message (out of coverage), drawn because symbol glyphs are missing from device fonts.
+    private function drawMessage(dc as Dc, title as String, msg as String, h as Number, lineH as Number, ring as Boolean) as Void {
+        var font = Graphics.FONT_XTINY;
         var top = (h - 2 * lineH) / 2;
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(0, top, Graphics.FONT_XTINY, title, Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(0, top, font, title, Graphics.TEXT_JUSTIFY_LEFT);
         dc.setColor(Aqi.GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(0, top + lineH, Graphics.FONT_XTINY, msg, Graphics.TEXT_JUSTIFY_LEFT);
+        var y = top + lineH;
+        var x = 0;
+        if (ring) {
+            // Centered on the capitals: about a third of the ascent above the baseline.
+            var asc = Graphics.getFontAscent(font);
+            var r = asc / 3;
+            if (r < 2) { r = 2; }
+            dc.setPenWidth(2);
+            dc.drawCircle(r + 1, y + asc - asc / 3, r);
+            dc.setPenWidth(1);
+            x = 2 * r + 2 + 4;
+        }
+        dc.drawText(x, y, font, msg, Graphics.TEXT_JUSTIFY_LEFT);
     }
 }
