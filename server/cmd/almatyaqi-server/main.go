@@ -61,11 +61,20 @@ func newLogger(c config.Log) *slog.Logger {
 	if err := lvl.UnmarshalText([]byte(c.Level)); err != nil {
 		lvl = slog.LevelInfo
 	}
-	opts := &slog.HandlerOptions{Level: lvl}
+	opts := &slog.HandlerOptions{Level: lvl, ReplaceAttr: durationString}
 	if strings.EqualFold(c.Format, "text") {
 		return slog.New(slog.NewTextHandler(os.Stderr, opts))
 	}
 	return slog.New(slog.NewJSONHandler(os.Stderr, opts))
+}
+
+// durationString logs time.Duration values as "15m0s" / "511ms": the JSON handler would
+// otherwise write them as integer nanoseconds.
+func durationString(_ []string, a slog.Attr) slog.Attr {
+	if a.Value.Kind() == slog.KindDuration {
+		a.Value = slog.StringValue(a.Value.Duration().String())
+	}
+	return a
 }
 
 func run(cfgPath string) error {
