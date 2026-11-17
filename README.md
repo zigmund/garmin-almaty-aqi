@@ -141,7 +141,8 @@ query string with the position. If you need an access log, use a `log_format` wi
 and `$request`.
 
 Build the watch app with `PROXY_URL=https://your-host.example` (the watch app is built
-against exactly one server: the default URL points at the legacy Worker).
+against exactly one server: the default URL is this project's server,
+`https://garmin-almaty-aqi.zigmund.xyz`).
 
 ### Releases
 
@@ -168,8 +169,9 @@ make -C watch dist VERSION=0.0.0  # watch/dist: store package (.iq) + zip of per
 npm --prefix proxy test         # proxy tests (fixtures, no API key needed)
 ```
 
-`PROXY_URL` defaults to the legacy public Worker, which speaks the old API; set it to your
-server (for a local one, `PROXY_URL=http://localhost:8790` with the server binary running).
+`PROXY_URL` defaults to this project's server, `https://garmin-almaty-aqi.zigmund.xyz`; a fork
+sets its own (for a local one, `PROXY_URL=http://localhost:8790` with the server binary
+running).
 `scripts/ciq-docker.sh KEY_DIR <make args>` runs a watch build in the same Docker image as CI.
 
 ## Releases
@@ -182,8 +184,9 @@ watch builds for one model per screen class.
 
 A fork must set up:
 
-- repository variable `PROXY_URL`: the deployed server URL. The release fails if it is empty
-  or contains `localhost`;
+- repository variable `PROXY_URL`: the deployed server URL. The release fails if it does
+  not start with `https://` or contains `localhost`, `127.0.0.1` or `.workers.dev` (the legacy
+  Worker speaks the old API);
 - secret `CIQ_DEVELOPER_KEY_BASE64` in the environment `release` (limited to `main`):
   `base64 -i ~/.connectiq/developer_key.der | pbcopy`. Store updates must be signed with the
   key of the first upload.

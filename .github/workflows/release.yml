@@ -72,11 +72,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # The watch talks to this Worker; a release pointing at localhost would be useless.
+      # The watch talks to this server; a release pointing at localhost would be useless, and the
+      # legacy Worker (*.workers.dev) speaks the old API.
       - name: Check PROXY_URL
         run: |
-          if [[ ! "$PROXY_URL" =~ ^https:// || "$PROXY_URL" == *localhost* || "$PROXY_URL" == *127.0.0.1* ]]; then
-            echo "::error::Repository variable PROXY_URL must be the deployed Worker URL, https:// and not localhost (got '${PROXY_URL}')"
+          if [[ ! "$PROXY_URL" =~ ^https:// || "$PROXY_URL" == *localhost* || "$PROXY_URL" == *127.0.0.1* || "$PROXY_URL" == *.workers.dev* ]]; then
+            echo "::error::Repository variable PROXY_URL must be the deployed server URL: https://, not localhost and not a *.workers.dev Worker (got '${PROXY_URL}')"
             exit 1
           fi
 
