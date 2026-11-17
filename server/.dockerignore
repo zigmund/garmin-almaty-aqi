@@ -1,0 +1,12 @@
+bin/
+dist/
+deploy/
+*.md
+.git
+.gitignore
+.dockerignore
+Dockerfile*
+# Never let a key or local config into the build context.
+*.vars
+aai_key*
+config.yaml

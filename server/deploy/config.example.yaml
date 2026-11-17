@@ -1,0 +1,50 @@
+# airmon-server example configuration. Every key is optional except aai.key_file;
+# the values below are the defaults. Unknown keys are rejected at startup.
+
+# Address the HTTP server binds to (nginx terminates TLS in front of it).
+# In a container use 0.0.0.0:8790.
+listen: 127.0.0.1:8790
+
+log:
+  level: info    # debug|info|warn|error
+  format: json   # json|text
+
+# Almaty Air Initiative (AAI) upstream API.
+aai:
+  base_url: https://backend.air.org.kz/v1   # https unless loopback (the key is sent there)
+  # The API key is read from this file only; it never belongs in the config.
+  # This path is where the bundled systemd unit (LoadCredential=aai_key:...)
+  # exposes the file; in k8s mount a Secret as a file and point this at it.
+  # A relative path is resolved against this config file's directory.
+  key_file: /run/credentials/airmon-server.service/aai_key
+  timeout: 8s                               # per upstream request, at most 2m
+
+cache:
+  backend: memory   # memory | redis (use redis when running several replicas)
+  ttl: 15m          # fresh lifetime of a cached response (at least 1m)
+  stale_ttl: 2h     # total lifetime; stale data is served within it (at least ttl)
+  lock_wait: 5s     # how long to wait for another replica refreshing the same group
+                    # (at most 2*aai.timeout + 5s, the fill lock TTL)
+
+# Used only when cache.backend is redis. Redis is reached over TCP only
+# (host:port); unix sockets are not supported.
+# redis:
+#   addr: 127.0.0.1:6379
+#   password_file: /run/secrets/redis_password   # optional, a file (never inline)
+#   db: 0
+#   prefix: "airmon:"
+
+# Hard ceiling on upstream requests per sliding hour (1..100). With redis the
+# budget is shared by all replicas. With the memory backend it is per process:
+# N replicas spend up to N*per_hour, and a restart resets the in-memory budget
+# and the failure cooldown. Every deployment that uses the same personal AAI key
+# (dev and test runs included) must share one redis, or the key's real limit
+# can be exceeded.
+budget:
+  per_hour: 80
+
+# Example: several replicas with a shared redis cache.
+# cache:
+#   backend: redis
+# redis:
+#   addr: redis:6379

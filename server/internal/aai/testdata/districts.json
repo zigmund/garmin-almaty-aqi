@@ -1,0 +1,10 @@
+{"city":"Алматы","timestamp":"2026-11-17T09:45:00+05:00","districts":[
+{"district":"Турксибский","pm25_avg":51.1,"pm10_avg":71.2,"aqi_avg":134,"stations_count":26,"measurements_count":26},
+{"district":"Жетысуский","pm25_avg":49.6,"stations_count":20},
+{"district":"Алатауский","pm25_avg":48.1,"stations_count":20},
+{"district":"Бостандыкский","pm25_avg":41.0,"stations_count":20},
+{"district":"Ауэзовский","pm25_avg":36.6,"stations_count":20},
+{"district":"Наурызбайский","pm25_avg":35.2,"stations_count":20},
+{"district":"Медеуский","pm25_avg":27.4,"stations_count":20},
+{"district":"Алмалинский","pm25_avg":18.4,"stations_count":20}
+],"meta":{}}

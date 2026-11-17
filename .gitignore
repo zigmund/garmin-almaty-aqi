@@ -34,3 +34,7 @@ proxy/node_modules/
 proxy/.dev.vars
 proxy/.prod.vars
 proxy/.wrangler/
+
+# Server (Go)
+server/bin/
+dist/

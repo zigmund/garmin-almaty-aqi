@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# Releases of the Go server. Tags are `v*`, shared with the watch app releases.
+# Run manually by the owner; CI is not set up yet.
+version: 2
+
+project_name: airmon-server
+
+builds:
+  - id: airmon-server
+    dir: server
+    main: ./cmd/airmon-server
+    binary: airmon-server
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    # Keep in sync with server/Makefile LDFLAGS (there the version comes from
+    # `git describe` and keeps its v prefix; here {{.Version}} has none).
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    mod_timestamp: '{{ .CommitTimestamp }}'
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    wrap_in_directory: true
+    builds_info:
+      mtime: '{{ .CommitDate }}'
+    files:
+      - src: 'README*'
+        info:
+          mtime: '{{ .CommitDate }}'
+      - src: 'LICENSE*'
+        info:
+          mtime: '{{ .CommitDate }}'
+      - src: 'server/deploy/*'
+        dst: deploy
+        strip_parent: true
+        info:
+          mtime: '{{ .CommitDate }}'
+
+# Docker Hub images (linux/amd64 + linux/arm64). Set DOCKERHUB_IMAGE, e.g.
+# `<user>/airmon-server`, and log in to Docker Hub before releasing.
+dockers_v2:
+  - id: airmon-server
+    ids: [airmon-server]
+    dockerfile: server/Dockerfile.goreleaser
+    images:
+      - '{{ .Env.DOCKERHUB_IMAGE }}'
+    tags:
+      - '{{ .Version }}'
+      - latest
+    platforms:
+      - linux/amd64
+      - linux/arm64
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+changelog:
+  use: github-native
+
+release:
+  prerelease: auto
+  draft: false
