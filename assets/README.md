@@ -1,9 +1,9 @@
 # Screenshots
 
-Exactly two files are expected here, both referenced from the top-level README:
+Both are referenced from the top-level README and taken in the Connect IQ simulator (fenix 6 Pro,
+Almaty):
 
 - `glance.png`: the glance;
-- `heatmap.png`: the full-screen heat map.
+- `heatmap.png`: the full-screen map.
 
-Take them in the Connect IQ simulator (fenix 6 Pro) and add them by hand: the
-simulator GUI cannot be scripted. Until then the README images show as broken links.
+Retake them by hand when the screens change: the simulator GUI cannot be scripted.
