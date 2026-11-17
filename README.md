@@ -1,8 +1,9 @@
 # AirMon
 
 AirMon is a Garmin Connect IQ widget that shows the current air quality in Almaty (and
-Karaganda) on your watch: a glance with the US AQI in its category colour, 6 hourly trend
-bars and a caption (city, or out of zone), and a full-screen heat map of the city with your position on it. Data comes from
+Karaganda) on your watch: a glance with a colour scale of the AQI categories and a marker at
+the current value, the US AQI number and the category name (or "out of coverage"), and a
+full-screen map of the city with your position on it. Data comes from
 the community sensor network of the [Almaty Air Initiative](https://air.org.kz) through a
 small Cloudflare Worker that hides the API key and keeps the watch traffic tiny.
 
@@ -12,7 +13,7 @@ small Cloudflare Worker that hides the API key and keeps the watch traffic tiny.
 
 The index is the US AQI computed from PM2.5 (EPA 2024 breakpoints). Gray means no data or
 data older than 30 minutes, counted from the time of the measurement (the glance then
-shows "N min ago").
+grays out its scale and shows "N min ago" instead of the category name).
 
 | Category | AQI | Color |
 |---|---|---|
@@ -23,6 +24,14 @@ shows "N min ago").
 | Very unhealthy | 201-300 | purple |
 | Hazardous | 301+ | maroon |
 | No data / stale | | gray |
+
+## The map
+
+Opening the widget shows the city. On watches with Garmin maps it is the watch's own map with a
+dot per station in its category colour (the dots are dithered, so the map shows through and
+dense areas read like a heat map) and a ring for your position. Press SELECT to pan and zoom
+with the buttons, BACK to return to the whole city, BACK again to leave. Watches without maps
+show a grid heat map of the city instead.
 
 ## Install
 
@@ -66,7 +75,7 @@ make -C watch dist VERSION=0.0.0  # watch/dist: store package (.iq) + zip of per
 npm --prefix proxy test         # proxy tests (fixtures, no API key needed)
 ```
 
-`PROXY_URL` defaults to `http://localhost:8787` (`npm run dev` in `proxy/`).
+`PROXY_URL` defaults to the public Worker; use `PROXY_URL=http://localhost:8787` with `npm run dev` in `proxy/`.
 `scripts/ciq-docker.sh KEY_DIR <make args>` runs a watch build in the same Docker image as CI.
 
 ## Releases

@@ -1,9 +1,18 @@
 <strings>
     <string id="AppName">AirMon</string>
-    <string id="NoData">No data</string>
-    <string id="OutOfZone">Out of coverage</string>
-    <string id="City">city</string>
-    <string id="MinAgo">$1$ min ago</string>
-    <string id="MinShort">$1$m</string>
+    <string id="NoData" scope="glance">No data</string>
+    <string id="OutOfZone" scope="glance">Out of coverage</string>
+    <string id="MinAgo" scope="glance">$1$ min ago</string>
+    <string id="MinShort" scope="glance">$1$m</string>
     <string id="Loading">Loading…</string>
+    <string id="Title" scope="glance">AIR QUALITY</string>
+    <string id="Unit" scope="glance">AQI</string>
+    <string id="Cat0" scope="glance">Good</string>
+    <string id="Cat1" scope="glance">Moderate</string>
+    <string id="Cat2" scope="glance">Unhealthy for sensitive groups</string>
+    <string id="Cat2Mid" scope="glance">Unhealthy for sensitive</string>
+    <string id="Cat2Short" scope="glance">Unhealthy (sensitive)</string>
+    <string id="Cat3" scope="glance">Unhealthy</string>
+    <string id="Cat4" scope="glance">Very unhealthy</string>
+    <string id="Cat5" scope="glance">Hazardous</string>
 </strings>

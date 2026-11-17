@@ -1,9 +1,18 @@
 <strings>
     <string id="AppName">AirMon</string>
-    <string id="NoData">Нет данных</string>
-    <string id="OutOfZone">Вне зоны покрытия</string>
-    <string id="City">город</string>
-    <string id="MinAgo">$1$ мин назад</string>
-    <string id="MinShort">$1$м</string>
+    <string id="NoData" scope="glance">Нет данных</string>
+    <string id="OutOfZone" scope="glance">Вне зоны покрытия</string>
+    <string id="MinAgo" scope="glance">$1$ мин назад</string>
+    <string id="MinShort" scope="glance">$1$м</string>
     <string id="Loading">Загрузка…</string>
+    <string id="Title" scope="glance">КАЧЕСТВО ВОЗДУХА</string>
+    <string id="Unit" scope="glance">AQI</string>
+    <string id="Cat0" scope="glance">Хороший</string>
+    <string id="Cat1" scope="glance">Умеренный</string>
+    <string id="Cat2" scope="glance">Нездоровый для чувствительных групп</string>
+    <string id="Cat2Mid" scope="glance">Нездоровый для чувствит.</string>
+    <string id="Cat2Short" scope="glance">Вредно чувствит.</string>
+    <string id="Cat3" scope="glance">Нездоровый</string>
+    <string id="Cat4" scope="glance">Очень нездоровый</string>
+    <string id="Cat5" scope="glance">Опасный</string>
 </strings>

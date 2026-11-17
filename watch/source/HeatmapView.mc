@@ -1,10 +1,7 @@
-import Toybox.Communications;
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.Position;
 import Toybox.System;
 import Toybox.Time;
-import Toybox.Timer;
 import Toybox.WatchUi;
 
 // Render-time log: debug builds only, nothing in release.
@@ -21,14 +18,12 @@ module HeatmapLog {
 
 // Full-screen city heatmap. Runs in the full widget process only (not glance/background).
 class HeatmapView extends WatchUi.View {
-    private const POS_TIMEOUT_MS = 10000;
     private const CROSS_HALF = 3;
 
     private enum { LOADING, OUT, ERROR, MAP }
 
     private var _state as Number = LOADING;
-    private var _requested as Boolean = false;
-    private var _timer as Timer.Timer? = null;
+    private var _fetch as HeatmapFetch;
 
     // Last good map, kept in memory only (never persisted).
     private var _grid as ByteArray? = null;
@@ -40,53 +35,16 @@ class HeatmapView extends WatchUi.View {
 
     function initialize() {
         View.initialize();
+        _fetch = new HeatmapFetch(method(:onResp));
     }
 
     function onShow() as Void {
-        stopTimer();
-        _requested = false;
         _state = LOADING;
-        _timer = new Timer.Timer();
-        (_timer as Timer.Timer).start(method(:onTimeout), POS_TIMEOUT_MS, false);
-        Position.enableLocationEvents(Position.LOCATION_ONE_SHOT, method(:onPos));
+        _fetch.start();
     }
 
     function onHide() as Void {
-        stopTimer();
-        Position.enableLocationEvents(Position.LOCATION_DISABLE, method(:onPos));
-    }
-
-    function onPos(info as Position.Info) as Void {
-        if (_requested || info.position == null) { return; }
-        var deg = (info.position as Position.Location).toDegrees();
-        var fix = [deg[0], deg[1], Time.now().value()];
-        Store.setFix(fix);
-        request(fix);
-    }
-
-    function onTimeout() as Void {
-        if (_requested) { return; }
-        request(Fix.pick(null, Store.fix(), Time.now().value()));
-    }
-
-    private function stopTimer() as Void {
-        if (_timer != null) {
-            (_timer as Timer.Timer).stop();
-            _timer = null;
-        }
-    }
-
-    // At most one request per onShow: onPos and the timeout race for it.
-    private function request(fix as Array?) as Void {
-        if (_requested) { return; }
-        _requested = true;
-        stopTimer();
-        Communications.makeWebRequest(
-            Api.heatmapUrl(fix, Store.lastCity()),
-            null,
-            {:method => Communications.HTTP_REQUEST_METHOD_GET, :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON},
-            method(:onResp)
-        );
+        _fetch.stop();
     }
 
     function onResp(code as Number, data as Dictionary or String or Null) as Void {

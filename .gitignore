@@ -32,4 +32,5 @@ watch/dist/
 # Proxy
 proxy/node_modules/
 proxy/.dev.vars
+proxy/.prod.vars
 proxy/.wrangler/

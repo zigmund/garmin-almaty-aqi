@@ -3,10 +3,20 @@ import Toybox.Lang;
 import Toybox.Time;
 import Toybox.WatchUi;
 
-// Glance: AQI number on the left, 6 hourly bars on the right. Drawn with dc only (32 KB limit).
+// Glance, laid out like the built-in HRV status one: a title line, a scale of the 6 AQI categories
+// with a marker at the current value, then the AQI number with its unit and the category name
+// (or the data age when stale) on one line. Drawn with dc only (32 KB limit).
 (:glance)
 class AirGlanceView extends WatchUi.GlanceView {
-    private const GAP = 3;
+    private const SEG_GAP = 3;    // between scale segments
+    private const BAR_H = 6;      // scale thickness
+    private const TICK_OUT = 3;   // marker overhang above and below the scale
+    private const TICK_W = 2;
+    private const UNIT_GAP = 3;   // number to "AQI"
+    private const WORD_GAP = 8;   // "AQI" to the category name
+    // The round screen clips the right end of the lower row even inside the glance rect: keep a margin.
+    private const ROW_MARGIN_PCT = 6;
+    private const ROW_MARGIN_MIN = 8;
 
     function initialize() {
         GlanceView.initialize();
@@ -17,117 +27,115 @@ class AirGlanceView extends WatchUi.GlanceView {
         dc.clear();
         var w = dc.getWidth();
         var h = dc.getHeight();
+        var small = Graphics.FONT_XTINY;
+        var lineH = dc.getFontHeight(small);
+        var title = WatchUi.loadResource(Rez.Strings.Title) as String;
         var d = Store.glance();
         var st = GlanceData.state(d);
         if (st == GlanceData.NO_DATA || d == null) {
-            drawText(dc, WatchUi.loadResource(Rez.Strings.NoData) as String, Aqi.GRAY, h / 2);
+            drawMessage(dc, title, WatchUi.loadResource(Rez.Strings.NoData) as String, h, lineH);
             return;
         }
         if (st == GlanceData.OUT) {
-            drawText(dc, "○ " + (WatchUi.loadResource(Rez.Strings.OutOfZone) as String), Aqi.GRAY, h / 2);
+            drawMessage(dc, title, "○ " + (WatchUi.loadResource(Rez.Strings.OutOfZone) as String), h, lineH);
             return;
         }
 
         var now = Time.now().value();
         var stale = GlanceData.isStale(d, now);
         var aqi = d["aqi"] as Number;
-        var color = stale ? Aqi.GRAY : Aqi.color(Aqi.category(aqi));
+        var cat = Aqi.category(aqi);
 
-        var hist = d["h"] as Array;
-        var barsX = barsLeft(hist.size(), w);
-        var availW = barsX - h / 8;  // left column: up to the bars minus a margin
-
-        // Caption lines: "city" in CITY mode (never dropped), then the age when stale.
-        var subFont = Graphics.FONT_XTINY;
-        var subH = dc.getFontHeight(subFont);
-        var city = st == GlanceData.CITY ? WatchUi.loadResource(Rez.Strings.City) as String : null;
-        var age = null;
-        var shortAge = null;
+        // Word after the number, longest form first: the category name, or the age when stale
+        // (the old value's category would mislead).
+        var words = [];
         if (stale) {
             var mins = GlanceData.ageMin(d, now);
             var m = mins == GlanceData.NEVER_MIN ? "?" : mins.toString();
-            age = Lang.format(WatchUi.loadResource(Rez.Strings.MinAgo) as String, [m]);
-            shortAge = Lang.format(WatchUi.loadResource(Rez.Strings.MinShort) as String, [m]);
-            if (dc.getTextWidthInPixels(age, subFont) > availW) { age = shortAge; }
+            words.add(Lang.format(WatchUi.loadResource(Rez.Strings.MinAgo) as String, [m]));
+            words.add(Lang.format(WatchUi.loadResource(Rez.Strings.MinShort) as String, [m]));
+        } else {
+            var ids = AqiLabel.forms(cat);
+            for (var i = 0; i < ids.size(); i++) { words.add(WatchUi.loadResource(ids[i]) as String); }
         }
-        var lines = [];
-        if (city != null) { lines.add(city); }
-        if (age != null) { lines.add(age); }
 
-        // Largest number font that fits the height (with all caption lines) and the column width.
+        // Bottom row: the largest number font that fits the height, then the word in the same font
+        // or in the small one, longest form that keeps the row within the width minus the margin.
         var text = aqi.toString();
-        var fonts = [Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_NUMBER_MILD, Graphics.FONT_MEDIUM, Graphics.FONT_SMALL];
-        var numFont = pickFont(dc, fonts, text, lines.size() * subH, availW, h);
-        if (numFont == null && lines.size() == 2) {
-            // Two lines do not fit: merge into one; if still too wide, the city alone (it always wins).
-            var merged = (city as String) + " " + (shortAge as String);
-            lines = [dc.getTextWidthInPixels(merged, subFont) <= availW ? merged : city];
-            numFont = pickFont(dc, fonts, text, subH, availW, h);
+        var unit = WatchUi.loadResource(Rez.Strings.Unit) as String;
+        var unitW = dc.getTextWidthInPixels(unit, small);
+        var scaleH = BAR_H + 2 * TICK_OUT;
+        var margin = w * ROW_MARGIN_PCT / 100;
+        if (margin < ROW_MARGIN_MIN) { margin = ROW_MARGIN_MIN; }
+        var rowW = w - margin;
+        var fonts = [Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_XTINY];
+        var numFont = small;
+        var wordFont = small;
+        var word = words[words.size() - 1] as String;
+        var found = false;
+        for (var f = 0; f < fonts.size() && !found; f++) {
+            var nf = fonts[f];
+            if (lineH + 3 + scaleH + 2 + dc.getFontHeight(nf) > h) { continue; }
+            var head = dc.getTextWidthInPixels(text, nf) + UNIT_GAP + unitW + WORD_GAP;
+            var wfs = [nf, small];
+            for (var k = 0; k < wfs.size() && !found; k++) {
+                for (var i = 0; i < words.size(); i++) {
+                    if (head + dc.getTextWidthInPixels(words[i] as String, wfs[k]) <= rowW) {
+                        numFont = nf;
+                        wordFont = wfs[k];
+                        word = words[i] as String;
+                        found = true;
+                        break;
+                    }
+                }
+            }
         }
-        if (numFont == null) { numFont = fonts[fonts.size() - 1]; }
-        subH = lines.size() * subH;
+
         var numH = dc.getFontHeight(numFont);
-        var top = (h - numH - subH) / 2;
+        var top = (h - (lineH + 3 + scaleH + 2 + numH)) / 2;
         if (top < 0) { top = 0; }
-        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(0, top, numFont, text, Graphics.TEXT_JUSTIFY_LEFT);
+        var barY = top + lineH + 3 + TICK_OUT;
+        var rowY = top + lineH + 3 + scaleH + 2;
+        var baseline = rowY + Graphics.getFontAscent(numFont);
+
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(0, top, small, title, Graphics.TEXT_JUSTIFY_LEFT);
+
+        drawScale(dc, aqi, stale, w, barY);
+
+        var fg = stale ? Aqi.GRAY : Graphics.COLOR_WHITE;
+        dc.setColor(fg, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(0, rowY, numFont, text, Graphics.TEXT_JUSTIFY_LEFT);
+        // Unit and word sit on the number's baseline.
+        var x = dc.getTextWidthInPixels(text, numFont) + UNIT_GAP;
+        dc.drawText(x, baseline - Graphics.getFontAscent(small), small, unit, Graphics.TEXT_JUSTIFY_LEFT);
+        x += unitW + WORD_GAP;
+        dc.drawText(x, baseline - Graphics.getFontAscent(wordFont), wordFont, word, Graphics.TEXT_JUSTIFY_LEFT);
+    }
+
+    // The 6 category segments (gray when stale) and the marker at the value, with a dark gap around it.
+    private function drawScale(dc as Dc, aqi as Number, stale as Boolean, w as Number, barY as Number) as Void {
+        for (var i = 0; i < AqiScale.SEGMENTS; i++) {
+            var s = AqiScale.segment(i, w, SEG_GAP);
+            dc.setColor(stale ? Aqi.GRAY : Aqi.color(i), Graphics.COLOR_TRANSPARENT);
+            dc.fillRectangle(s[0], barY, s[1], BAR_H);
+        }
+        var mx = AqiScale.markerX(aqi, w, SEG_GAP);
+        var left = mx - TICK_W / 2;
+        if (left < 0) { left = 0; }
+        if (left > w - TICK_W) { left = w - TICK_W; }
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(left - 2, barY, TICK_W + 4, BAR_H);
+        dc.setColor(stale ? Aqi.GRAY : Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(left, barY - TICK_OUT, TICK_W, BAR_H + 2 * TICK_OUT);
+    }
+
+    // Title line plus one message line, vertically centered.
+    private function drawMessage(dc as Dc, title as String, msg as String, h as Number, lineH as Number) as Void {
+        var top = (h - 2 * lineH) / 2;
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(0, top, Graphics.FONT_XTINY, title, Graphics.TEXT_JUSTIFY_LEFT);
         dc.setColor(Aqi.GRAY, Graphics.COLOR_TRANSPARENT);
-        var lineH = dc.getFontHeight(subFont);
-        for (var i = 0; i < lines.size(); i++) {
-            dc.drawText(0, top + numH + i * lineH, subFont, lines[i], Graphics.TEXT_JUSTIFY_LEFT);
-        }
-
-        drawBars(dc, hist, stale, w, h);
-    }
-
-    // First font whose height plus captionH fits in h and whose text fits availW, else null.
-    private function pickFont(dc as Dc, fonts as Array, text as String, captionH as Number, availW as Number, h as Number) as Graphics.FontType? {
-        for (var i = 0; i < fonts.size(); i++) {
-            if (dc.getFontHeight(fonts[i]) + captionH <= h && dc.getTextWidthInPixels(text, fonts[i]) <= availW) {
-                return fonts[i];
-            }
-        }
-        return null;
-    }
-
-    // Bar geometry: the bars take the right ~45% of the width, with a fixed gap.
-    private function barWidth(n as Number, w as Number) as Number {
-        var bw = (w * 45 / 100 - (n - 1) * GAP) / n;
-        return bw < 2 ? 2 : bw;
-    }
-
-    private function barsLeft(n as Number, w as Number) as Number {
-        return n == 0 ? w : w - (barWidth(n, w) * n + GAP * (n - 1));
-    }
-
-    // Right ~45% of the width, bars grow up from the bottom margin.
-    private function drawBars(dc as Dc, hist as Array, stale as Boolean, w as Number, h as Number) as Void {
-        var n = hist.size();
-        if (n == 0) { return; }
-        var margin = h / 8;
-        var maxPx = h - 2 * margin;
-        var gap = GAP;
-        var bw = barWidth(n, w);
-        var x = barsLeft(n, w);
-        var base = h - margin;
-        var hs = Bars.heights(hist, maxPx);
-        for (var i = 0; i < n; i++) {
-            var px = hs[i];
-            if (px < 0) {
-                dc.setColor(Aqi.GRAY, Graphics.COLOR_TRANSPARENT);
-                dc.fillRectangle(x, base - 2, bw, 2);
-            } else {
-                var cat = Aqi.category(hist[i] as Number);
-                // Stale data is gray (spec: older than 30 min), bars included.
-                dc.setColor(stale ? Aqi.GRAY : Aqi.color(cat), Graphics.COLOR_TRANSPARENT);
-                dc.fillRectangle(x, base - px, bw, px);
-            }
-            x += bw + gap;
-        }
-    }
-
-    private function drawText(dc as Dc, s as String, color as Number, y as Number) as Void {
-        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(0, y, Graphics.FONT_XTINY, s, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(0, top + lineH, Graphics.FONT_XTINY, msg, Graphics.TEXT_JUSTIFY_LEFT);
     }
 }

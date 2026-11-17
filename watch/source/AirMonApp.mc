@@ -31,7 +31,12 @@ class AirMonApp extends Application.AppBase {
         WatchUi.requestUpdate();
     }
 
+    // The device's own map where it has one; the grid heat map elsewhere.
     function getInitialView() as [Views] or [Views, InputDelegates] {
+        if (WatchUi has :MapView) {
+            var v = new MapAirView();
+            return [v, new MapAirDelegate(v)];
+        }
         return [new HeatmapView(), new HeatmapDelegate()];
     }
 
