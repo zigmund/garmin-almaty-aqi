@@ -63,10 +63,10 @@ class AirGlanceView extends WatchUi.GlanceView {
         // (the old value's category would mislead).
         var words = [];
         if (stale) {
-            var mins = GlanceData.ageMin(d, now);
-            var m = mins == GlanceData.NEVER_MIN ? "?" : mins.toString();
-            words.add(Lang.format(WatchUi.loadResource(Rez.Strings.MinAgo) as String, [m]));
-            words.add(Lang.format(WatchUi.loadResource(Rez.Strings.MinShort) as String, [m]));
+            var age = GlanceData.ageParts(GlanceData.ageMin(d, now));
+            var v = [age[0]];
+            words.add(Lang.format(WatchUi.loadResource(age[1] ? Rez.Strings.HourAgo : Rez.Strings.MinAgo) as String, v));
+            words.add(Lang.format(WatchUi.loadResource(age[1] ? Rez.Strings.HourShort : Rez.Strings.MinShort) as String, v));
         } else {
             var ids = AqiLabel.forms(cat);
             for (var i = 0; i < ids.size(); i++) { words.add(WatchUi.loadResource(ids[i]) as String); }
@@ -74,6 +74,7 @@ class AirGlanceView extends WatchUi.GlanceView {
 
         // Bottom row: the largest number font that fits the height, then the word in the same font
         // or in the small one, longest form that keeps the row within the width minus the margin.
+        // The age is always small, like the unit, so it does not read as a second value.
         var text = aqi.toString();
         var unit = WatchUi.loadResource(Rez.Strings.Unit) as String;
         var unitW = dc.getTextWidthInPixels(unit, small);
@@ -90,7 +91,7 @@ class AirGlanceView extends WatchUi.GlanceView {
             var nf = fonts[f];
             if (lineH + 3 + scaleH + 2 + dc.getFontHeight(nf) > h) { continue; }
             var head = dc.getTextWidthInPixels(text, nf) + UNIT_GAP + unitW + WORD_GAP;
-            var wfs = [nf, small];
+            var wfs = stale ? [small] : [nf, small];
             for (var k = 0; k < wfs.size() && !found; k++) {
                 for (var i = 0; i < words.size(); i++) {
                     if (head + dc.getTextWidthInPixels(words[i] as String, wfs[k]) <= rowW) {
