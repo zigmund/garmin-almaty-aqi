@@ -74,7 +74,7 @@ hour (`budget.per_hour`, at most 100) so a personal API key stays far below the 
 limit. `GET /healthz` answers 200 without calling AAI.
 
 The watch app is built against one server: build it with the URL of the server you deploy
-(see the nginx section for `PROXY_URL`).
+(see the nginx section for `SERVER_URL`).
 
 Config: copy [server/deploy/config.example.yaml](server/deploy/config.example.yaml) to
 `/etc/almatyaqi-server/config.yaml`; only `aai.key_file` is required, everything else has a
@@ -140,7 +140,7 @@ and `$request`.
 To check that watches reach the server, set `log.requests: true` in the server config for a
 while: it logs every request with its query string, so the position ends up in the log too.
 
-Build the watch app with `PROXY_URL=https://your-host.example` (the watch app is built
+Build the watch app with `SERVER_URL=https://your-host.example` (the watch app is built
 against exactly one server: the default URL is this project's server,
 `https://garmin-almaty-aqi.zigmund.xyz`).
 
@@ -164,8 +164,8 @@ make -C watch sim               # run in the simulator
 make -C watch dist VERSION=0.0.0  # watch/dist: store package (.iq) + zip of per-model .prg
 ```
 
-`PROXY_URL` defaults to this project's server, `https://garmin-almaty-aqi.zigmund.xyz`; a fork
-sets its own (for a local one, `PROXY_URL=http://localhost:8790` with the server binary
+`SERVER_URL` defaults to this project's server, `https://garmin-almaty-aqi.zigmund.xyz`; a fork
+sets its own (for a local one, `SERVER_URL=http://localhost:8790` with the server binary
 running; the simulator then needs Settings -> "Use Device HTTPS Requirements" turned off, or
 it refuses plain `http://` requests).
 `scripts/ciq-docker.sh KEY_DIR <make args>` runs a watch build in the same Docker image as CI.
@@ -183,7 +183,7 @@ model per screen class.
 
 A fork must set up:
 
-- repository variable `PROXY_URL`: the deployed server URL. The release fails if it does
+- repository variable `SERVER_URL`: the deployed server URL. The release fails if it does
   not start with `https://` or contains `localhost`, `127.0.0.1` or `.workers.dev` (the retired
   Worker with the old API);
 - secret `CIQ_DEVELOPER_KEY_BASE64` in the environment `release` (limited to `main`):

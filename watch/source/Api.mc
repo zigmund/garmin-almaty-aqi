@@ -13,7 +13,7 @@ module Api {
     }
 
     function url(path as String, pos as Array?, place as String?) as String {
-        var u = BuildInfo.PROXY_URL + path;
+        var u = BuildInfo.SERVER_URL + path;
         var sep = "?";
         if (place != null) {
             u += sep + "city=" + place;
