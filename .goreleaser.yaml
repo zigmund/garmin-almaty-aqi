@@ -1,6 +1,8 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# Releases of the Go server. Tags are `v*`, shared with the watch app releases.
-# Run manually by the owner; CI is not set up yet.
+# Releases of the Go server. Tags are `v*`, shared with the watch app: one GitHub release holds
+# the server archives and images and the watch files. Run by the Release workflow
+# (.github/workflows/release.yml), which puts the watch files in watch/dist first; CI checks this
+# config and builds a snapshot on every push and pull request.
 version: 2
 
 project_name: almatyaqi-server
@@ -65,5 +67,11 @@ changelog:
   use: github-native
 
 release:
+  name_template: 'Almaty AQI {{ .Version }}'
+  # The Release workflow does not push the tag: GitHub creates it on this commit with the release.
+  target_commitish: '{{ .FullCommit }}'
   prerelease: auto
   draft: false
+  # The watch app's .iq and per-model .prg zip, built by the Release workflow.
+  extra_files:
+    - glob: ./watch/dist/*

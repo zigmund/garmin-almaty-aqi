@@ -100,27 +100,71 @@ jobs:
           if-no-files-found: error
 
   release:
-    name: GitHub release
+    name: GitHub release (server + watch)
     needs: [version, watch]
     runs-on: ubuntu-latest
+    # Docker Hub secrets live in the "release" environment, limited to the main branch.
+    environment: release
     permissions:
       contents: write
     env:
       VERSION: ${{ needs.version.outputs.version }}
+      DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
     steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # Attached to the release by goreleaser (release.extra_files in .goreleaser.yaml).
       - uses: actions/download-artifact@v6
         with:
-          path: assets
-          merge-multiple: true
+          name: watch
+          path: watch/dist
 
-      # Creates tag vX.Y.Z on the built commit; notes are generated from the commits since the last tag.
-      - name: Create release
+      # Docker Hub is optional: without DOCKERHUB_IMAGE the release has no images.
+      - name: Docker Hub settings
+        id: docker
         env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
-          ls -l assets
-          gh release create "v$VERSION" assets/* \
-            --target "$GITHUB_SHA" \
-            --title "Almaty AQI $VERSION" \
-            --generate-notes
+          if [ -z "$DOCKERHUB_IMAGE" ]; then
+            echo "::warning::Repository variable DOCKERHUB_IMAGE is not set: releasing without Docker images"
+            echo "skip=--skip=docker" >> "$GITHUB_OUTPUT"
+          elif [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
+            echo "::error::DOCKERHUB_IMAGE is set, but secret DOCKERHUB_USERNAME or DOCKERHUB_TOKEN is missing in the release environment"
+            exit 1
+          else
+            echo "skip=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: server/go.mod
+          cache-dependency-path: server/go.sum
+
+      - if: env.DOCKERHUB_IMAGE != ''
+        uses: docker/setup-qemu-action@v3
+
+      - if: env.DOCKERHUB_IMAGE != ''
+        uses: docker/setup-buildx-action@v3
+
+      - if: env.DOCKERHUB_IMAGE != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # goreleaser reads the version from a local tag. The tag is not pushed: GitHub creates
+      # vX.Y.Z on this commit (release.target_commitish) together with the release, so a run
+      # that fails before that leaves no tag behind and can simply be rerun. A failure after
+      # the release is created (asset upload) leaves the release and tag: delete both to rerun.
+      - name: Tag
+        run: git tag "v$VERSION" "$GITHUB_SHA"
+
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean ${{ steps.docker.outputs.skip }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
