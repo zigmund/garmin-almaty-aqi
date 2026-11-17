@@ -14,17 +14,19 @@ class MapAirView extends WatchUi.MapView {
     private var _state as Number = LOADING;
     private var _fetch as HeatmapFetch;
     private var _hasMarkers as Boolean = false;  // last good markers stay on screen after an error
+    private var _hasCity as Boolean = false;     // the map area frames a city (stored or from a response)
 
     function initialize() {
         MapView.initialize();
         setMapMode(WatchUi.MAP_MODE_PREVIEW);
+        var ds = System.getDeviceSettings();
+        setScreenVisibleArea(0, 0, ds.screenWidth, ds.screenHeight);
         _fetch = new HeatmapFetch(method(:onResp));
-        // Frame the last known city until the first response arrives; with no
-        // stored place (or "out") leave the map where it is.
+        // MapView throws at start without a map area, so always set one: the last known city, or
+        // Almaty as a placeholder that is not drawn (_hasCity stays false) until a city response.
         var place = Store.place();
-        if (place != null && (place.equals("almaty") || place.equals("karaganda"))) {
-            setArea(MapModel.cityBbox(place));
-        }
+        _hasCity = place != null && (place.equals("almaty") || place.equals("karaganda"));
+        setArea(MapModel.cityBbox(_hasCity ? place as String : "almaty"));
     }
 
     function onShow() as Void {
@@ -75,6 +77,7 @@ class MapAirView extends WatchUi.MapView {
         clear();
         setMapMarker(markers);
         setArea(r["bbox"] as Array);
+        _hasCity = true;
         _hasMarkers = true;
     }
 
@@ -90,17 +93,17 @@ class MapAirView extends WatchUi.MapView {
         var tl = new Position.Location({:latitude => bbox[3].toFloat(), :longitude => bbox[0].toFloat(), :format => :degrees});
         var br = new Position.Location({:latitude => bbox[1].toFloat(), :longitude => bbox[2].toFloat(), :format => :degrees});
         setMapVisibleArea(tl, br);
-        var ds = System.getDeviceSettings();
-        setScreenVisibleArea(0, 0, ds.screenWidth, ds.screenHeight);
     }
 
     function onUpdate(dc as Dc) as Void {
-        if (_state == OUT || _state == NOPOS) {
+        if (_state == OUT || _state == NOPOS || !_hasCity) {
             // Out of coverage / no position is explicit: no map, just the message (as on the grid heat map).
+            // Same while no city is known: the placeholder area is not shown.
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
             dc.clear();
-            var id = _state == OUT ? Rez.Strings.OutOfZone : Rez.Strings.NoPosShort;
-            drawMessage(dc, WatchUi.loadResource(id) as String, Aqi.GRAY);
+            var id = _state == OUT ? Rez.Strings.OutOfZone : _state == NOPOS ? Rez.Strings.NoPosShort
+                : _state == LOADING ? Rez.Strings.Loading : Rez.Strings.NoData;
+            drawMessage(dc, WatchUi.loadResource(id) as String, _state == LOADING ? Graphics.COLOR_WHITE : Aqi.GRAY);
             return;
         }
         MapView.onUpdate(dc);
