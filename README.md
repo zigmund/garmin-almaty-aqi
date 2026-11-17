@@ -140,6 +140,8 @@ location /v1/ {
 `access_log off;` matters: the default log format records `$request`, which includes the
 query string with the position. If you need an access log, use a `log_format` without `$args`
 and `$request`.
+To check that watches reach the server, set `log.requests: true` in the server config for a
+while: it logs every request with its query string, so the position ends up in the log too.
 
 Build the watch app with `PROXY_URL=https://your-host.example` (the watch app is built
 against exactly one server: the default URL is this project's server,

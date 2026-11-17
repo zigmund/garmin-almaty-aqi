@@ -73,6 +73,8 @@ type Config struct {
 type Log struct {
 	Level  string `yaml:"level"`  // debug|info|warn|error
 	Format string `yaml:"format"` // json|text
+	// Requests logs every incoming HTTP request, query string (the watch position) included.
+	Requests bool `yaml:"requests"`
 }
 
 // AAI configures the upstream Almaty Air Initiative API client.

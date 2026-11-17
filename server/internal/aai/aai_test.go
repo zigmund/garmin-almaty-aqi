@@ -127,8 +127,8 @@ func TestClientNeverLogsKey(t *testing.T) {
 	}
 	errs = append(errs, e1, e2)
 	out := buf.String()
-	if n := strings.Count(out, "aai request"); n != 3 {
-		t.Errorf("want 3 'aai request' lines, got %d: %s", n, out)
+	if n := strings.Count(out, `msg="request out" dir=out upstream=aai`); n != 3 {
+		t.Errorf("want 3 'request out' lines, got %d: %s", n, out)
 	}
 	for _, want := range []string{"path=/measurements/map", "status=200", "outcome=ok", "outcome=bad_status", "outcome=error:timeout_or_canceled", "duration="} {
 		if !strings.Contains(out, want) {
