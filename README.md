@@ -43,8 +43,9 @@ Side-load: download the latest
 `GARMIN/APPS` on the watch over USB and add Almaty AQI to the widget loop. Allow location and
 background access when asked.
 
-Supported: 22 round-display models (fenix 6 family, fenix 8 47 mm, Forerunner 245/745/945,
-MARQ, Descent Mk2, Enduro).
+Supported: 72 models with glances (fenix 6/7/8/9 and fenix E, epix Pro, Enduro, MARQ,
+Forerunner 55/165/170/245/255/265/570/745/945/955/965/970, Descent, D2 Mach); the zip's README
+has the full list.
 
 ## How it works
 
@@ -177,7 +178,7 @@ Actions -> **Release** -> Run workflow (on `main`), choose `patch` / `minor` / `
 builds every model and the store package and creates tag `vX.Y.Z` with a GitHub release:
 `AlmatyAQI-X.Y.Z.iq` (upload it by hand at the Connect IQ developer dashboard) and
 `AlmatyAQI-X.Y.Z-watch-prg.zip`. CI (every push and pull request) runs the proxy tests and
-watch builds for fenix6pro, fenix6s and fenix847mm.
+watch builds for one model per screen class.
 
 A fork must set up:
 
