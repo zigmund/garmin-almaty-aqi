@@ -147,8 +147,10 @@ against exactly one server: the default URL is this project's server,
 ### Releases
 
 [.goreleaser.yaml](.goreleaser.yaml) builds the server for linux and darwin (amd64, arm64)
-into archives with checksums and builds the Docker Hub images. It runs on tags `v*` (shared
-with the watch releases), started manually: `DOCKERHUB_IMAGE=<user>/almatyaqi-server goreleaser release --clean`.
+into archives with checksums and builds the Docker Hub images. The Release workflow runs it
+(see the top-level Releases section): one tag `vX.Y.Z` and one GitHub release carry both the
+server and the watch app. By hand, on a tagged commit:
+`DOCKERHUB_IMAGE=<user>/almatyaqi-server goreleaser release --clean`.
 
 ## Legacy Cloudflare Worker
 
@@ -177,10 +179,13 @@ running).
 ## Releases
 
 Actions -> **Release** -> Run workflow (on `main`), choose `patch` / `minor` / `major`. It
-builds every model and the store package and creates tag `vX.Y.Z` with a GitHub release:
-`AlmatyAQI-X.Y.Z.iq` (upload it by hand at the Connect IQ developer dashboard) and
-`AlmatyAQI-X.Y.Z-watch-prg.zip`. CI (every push and pull request) runs the proxy tests and
-watch builds for one model per screen class.
+builds every watch model and the store package, then goreleaser builds the server and creates
+tag `vX.Y.Z` with one GitHub release: `AlmatyAQI-X.Y.Z.iq` (upload it by hand at the Connect
+IQ developer dashboard), `AlmatyAQI-X.Y.Z-watch-prg.zip`, the server archives
+`almatyaqi-server_X.Y.Z_<os>_<arch>.tar.gz` with `checksums.txt`, and the Docker Hub images
+`X.Y.Z` and `latest` when Docker Hub is configured. CI (every push and pull request) runs the
+server's gofmt, vet, race tests and a goreleaser snapshot build, the proxy tests and watch
+builds for one model per screen class.
 
 A fork must set up:
 
@@ -189,7 +194,11 @@ A fork must set up:
   Worker speaks the old API);
 - secret `CIQ_DEVELOPER_KEY_BASE64` in the environment `release` (limited to `main`):
   `base64 -i ~/.connectiq/developer_key.der | pbcopy`. Store updates must be signed with the
-  key of the first upload.
+  key of the first upload;
+- optional, for the server images: repository variable `DOCKERHUB_IMAGE`
+  (`<user>/almatyaqi-server`) and secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (an
+  access token with write access) in the environment `release`. Without the variable the
+  release has no images; with it but without the secrets the release fails.
 
 ## License
 
