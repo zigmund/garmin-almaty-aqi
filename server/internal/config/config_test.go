@@ -33,7 +33,7 @@ func TestLoadDefaults(t *testing.T) {
 	if c.AAI.BaseURL != "https://backend.air.org.kz/v1" || c.AAI.KeyFile != "/run/key" || c.AAI.Timeout != 8*time.Second {
 		t.Errorf("aai = %+v", c.AAI)
 	}
-	if c.Cache.Backend != "memory" || c.Cache.TTL != 15*time.Minute ||
+	if c.Cache.Backend != "memory" || c.Cache.TTL != 5*time.Minute ||
 		c.Cache.StaleTTL != 2*time.Hour || c.Cache.LockWait != 5*time.Second {
 		t.Errorf("cache = %+v", c.Cache)
 	}

@@ -13,9 +13,8 @@ server that hides the API key, caches responses and keeps the watch traffic tiny
 ## Reading the colors
 
 The index is the US AQI computed from PM2.5 (EPA 2024 breakpoints). Gray means no data or
-data older than 30 minutes, counted from the time of the measurement (the glance then
-grays out its scale and shows "N min ago", or "N h ago" after an hour, instead of the
-category name).
+data older than an hour, counted from the time of the measurement (the glance then grays
+out its scale and shows "N h ago" instead of the category name).
 
 | Category | AQI | Color |
 |---|---|---|
@@ -68,7 +67,7 @@ watch. The server logs no positions.
 
 `server/` is a self-hosted Go server that serves `/v1/glance` and `/v1/heatmap` to the watch
 app. It keeps the AAI API key on the server (read from a file, never from the config or the
-image), caches ready responses (15 minutes fresh, served stale for up to
+image), caches ready responses (5 minutes fresh, served stale for up to
 2 hours when AAI is unreachable) and spends AAI requests from a hard budget of 80 per sliding
 hour (`budget.per_hour`, at most 100) so a personal API key stays far below the provider's
 limit. `GET /healthz` answers 200 without calling AAI.

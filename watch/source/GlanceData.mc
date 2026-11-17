@@ -5,7 +5,7 @@ import Toybox.Lang;
 module GlanceData {
     enum { NO_DATA, OUT, CITY, NOPOS }
 
-    const STALE_SEC = 1800;
+    const STALE_SEC = 3600;
     const NEVER_MIN = 9999;
 
     function state(d as Dictionary?) as Number {

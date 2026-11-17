@@ -26,7 +26,7 @@ const (
 	DefaultLogFormat   = "json"
 	DefaultAAIBaseURL  = "https://backend.air.org.kz/v1"
 	DefaultAAITimeout  = 8 * time.Second
-	DefaultCacheTTL    = 15 * time.Minute
+	DefaultCacheTTL    = 5 * time.Minute
 	DefaultStaleTTL    = 2 * time.Hour
 	DefaultLockWait    = 5 * time.Second
 	DefaultRedisAddr   = "127.0.0.1:6379"
