@@ -49,7 +49,7 @@ MARQ, Descent Mk2, Enduro).
 ## How it works
 
 ```
-watch (glance / widget)  -->  airmon-server (server/)  -->  Almaty Air Initiative API
+watch (glance / widget)  -->  almatyaqi-server (server/)  -->  Almaty Air Initiative API
    background refresh          cache, API key, budget       PM2.5 stations
    every 5 minutes             compact JSON
 ```
@@ -78,7 +78,7 @@ builds do not work with the old Worker; build the watch app against the server y
 proxy that this server replaces; it still exists in the repository for now.
 
 Config: copy [server/deploy/config.example.yaml](server/deploy/config.example.yaml) to
-`/etc/airmon-server/config.yaml`; only `aai.key_file` is required, everything else has a
+`/etc/almatyaqi-server/config.yaml`; only `aai.key_file` is required, everything else has a
 default. Flags: `-config PATH`, `-version`.
 
 The server logs each upstream request at info level (path, status, duration, outcome; never
@@ -93,26 +93,26 @@ key's real limit can be exceeded.
 ### systemd
 
 ```sh
-make -C server build                      # server/bin/airmon-server (or take a release archive)
-install -m 0755 server/bin/airmon-server /usr/local/bin/
-install -d /etc/airmon-server
-install -m 0644 server/deploy/config.example.yaml /etc/airmon-server/config.yaml
-install -m 0600 -o root -g root /dev/null /etc/airmon-server/aai_key   # then put the key in it
-install -m 0644 server/deploy/airmon-server.service /etc/systemd/system/
-systemctl daemon-reload && systemctl enable --now airmon-server
+make -C server build                      # server/bin/almatyaqi-server (or take a release archive)
+install -m 0755 server/bin/almatyaqi-server /usr/local/bin/
+install -d /etc/almatyaqi-server
+install -m 0644 server/deploy/config.example.yaml /etc/almatyaqi-server/config.yaml
+install -m 0600 -o root -g root /dev/null /etc/almatyaqi-server/aai_key   # then put the key in it
+install -m 0644 server/deploy/almatyaqi-server.service /etc/systemd/system/
+systemctl daemon-reload && systemctl enable --now almatyaqi-server
 ```
 
 The unit runs as a dynamic unprivileged user and hands the key over with
-`LoadCredential=`, so `aai.key_file` stays `/run/credentials/airmon-server.service/aai_key`.
-After changing the config or the key use `systemctl restart airmon-server`.
+`LoadCredential=`, so `aai.key_file` stays `/run/credentials/almatyaqi-server.service/aai_key`.
+After changing the config or the key use `systemctl restart almatyaqi-server`.
 
 ### Docker and Kubernetes
 
 ```sh
-docker build -t airmon-server --build-arg VERSION=0.0.0 server/
+docker build -t almatyaqi-server --build-arg VERSION=0.0.0 server/
 docker run --rm -p 8790:8790 \
-  -v $PWD/config.yaml:/etc/airmon-server/config.yaml:ro \
-  -v $PWD/aai_key:/run/secrets/aai_key:ro airmon-server
+  -v $PWD/config.yaml:/etc/almatyaqi-server/config.yaml:ro \
+  -v $PWD/aai_key:/run/secrets/aai_key:ro almatyaqi-server
 ```
 
 In the config set `listen: 0.0.0.0:8790` and `aai.key_file: /run/secrets/aai_key`. The key is
@@ -121,7 +121,7 @@ uid/gid 65532 (distroless `nonroot`), so the key file must be readable by it: `c
 on the host (mode 0400/0600), or in Kubernetes set the Secret volume `defaultMode: 0440` with
 `securityContext.fsGroup: 65532`. With several replicas
 use `cache.backend: redis` (and `redis.addr`) so they share the cache, locks and the AAI
-budget. Release images are built by goreleaser for Docker Hub as `<user>/airmon-server`
+budget. Release images are built by goreleaser for Docker Hub as `<user>/almatyaqi-server`
 (linux/amd64 and linux/arm64, tags `X.Y.Z` and `latest`).
 
 ### nginx
@@ -146,7 +146,7 @@ against exactly one server: the default URL points at the legacy Worker).
 
 [.goreleaser.yaml](.goreleaser.yaml) builds the server for linux and darwin (amd64, arm64)
 into archives with checksums and builds the Docker Hub images. It runs on tags `v*` (shared
-with the watch releases), started manually: `DOCKERHUB_IMAGE=<user>/airmon-server goreleaser release --clean`.
+with the watch releases), started manually: `DOCKERHUB_IMAGE=<user>/almatyaqi-server goreleaser release --clean`.
 
 ## Legacy Cloudflare Worker
 

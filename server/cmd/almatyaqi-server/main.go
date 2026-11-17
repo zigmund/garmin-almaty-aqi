@@ -1,4 +1,4 @@
-// Command airmon-server serves air quality data to Garmin watches.
+// Command almatyaqi-server serves air quality data to Garmin watches.
 package main
 
 import (
@@ -16,11 +16,11 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"github.com/zigmund/garmin-airmon/server/internal/aai"
-	"github.com/zigmund/garmin-airmon/server/internal/cache"
-	"github.com/zigmund/garmin-airmon/server/internal/config"
-	"github.com/zigmund/garmin-airmon/server/internal/httpapi"
-	"github.com/zigmund/garmin-airmon/server/internal/service"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/aai"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/config"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/httpapi"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/service"
 )
 
 // version is set at build time with -ldflags "-X main.version=...".
@@ -43,7 +43,7 @@ type store interface {
 }
 
 func main() {
-	cfgPath := flag.String("config", "/etc/airmon-server/config.yaml", "path to the YAML config")
+	cfgPath := flag.String("config", "/etc/almatyaqi-server/config.yaml", "path to the YAML config")
 	showVersion := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
 	if *showVersion {
@@ -51,7 +51,7 @@ func main() {
 		return
 	}
 	if err := run(*cfgPath); err != nil {
-		fmt.Fprintln(os.Stderr, "airmon-server:", err)
+		fmt.Fprintln(os.Stderr, "almatyaqi-server:", err)
 		os.Exit(1)
 	}
 }

@@ -10,8 +10,8 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/zigmund/garmin-airmon/server/internal/cache"
-	"github.com/zigmund/garmin-airmon/server/internal/cache/cachetest"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache/cachetest"
 )
 
 func newTestRedis(t *testing.T, prefix string) (*cache.Redis, *miniredis.Miniredis, func(time.Duration)) {
@@ -38,14 +38,14 @@ func newTestRedis(t *testing.T, prefix string) (*cache.Redis, *miniredis.Minired
 
 func TestRedisSuite(t *testing.T) {
 	cachetest.RunSuite(t, func(t *testing.T) (cachetest.Impl, func(time.Duration)) {
-		r, _, advance := newTestRedis(t, "airmon:")
+		r, _, advance := newTestRedis(t, "almatyaqi:")
 		return r, advance
 	})
 }
 
 func TestRedisDownReturnsError(t *testing.T) {
 	ctx := context.Background()
-	r, mr, _ := newTestRedis(t, "airmon:")
+	r, mr, _ := newTestRedis(t, "almatyaqi:")
 	mr.Close()
 
 	if _, _, err := r.Get(ctx, "k"); err == nil || errors.Is(err, cache.ErrBudget) {
@@ -64,23 +64,23 @@ func TestRedisDownReturnsError(t *testing.T) {
 
 func TestRedisPrefix(t *testing.T) {
 	ctx := context.Background()
-	r, mr, _ := newTestRedis(t, "airmon:")
+	r, mr, _ := newTestRedis(t, "almatyaqi:")
 	if err := r.Set(ctx, "glance:almaty", cache.Entry{Body: []byte(`{}`)}, time.Minute); err != nil {
 		t.Fatal(err)
 	}
-	if !mr.Exists("airmon:v1:glance:almaty") {
+	if !mr.Exists("almatyaqi:v1:glance:almaty") {
 		t.Fatalf("keys = %v", mr.Keys())
 	}
 	if _, ok, _ := r.Lock(ctx, "g", time.Minute); !ok {
 		t.Fatal("lock")
 	}
-	if !mr.Exists("airmon:lock:g") {
+	if !mr.Exists("almatyaqi:lock:g") {
 		t.Fatalf("keys = %v", mr.Keys())
 	}
 	if err := r.Take(ctx); err != nil {
 		t.Fatal(err)
 	}
-	if !mr.Exists("airmon:budget") {
+	if !mr.Exists("almatyaqi:budget") {
 		t.Fatalf("keys = %v", mr.Keys())
 	}
 }

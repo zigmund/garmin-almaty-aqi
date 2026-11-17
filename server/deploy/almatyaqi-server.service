@@ -1,11 +1,11 @@
 [Unit]
-Description=airmon-server (air quality API for the Almaty AQI Garmin widget)
+Description=almatyaqi-server (air quality API for the Almaty AQI Garmin widget)
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=exec
-ExecStart=/usr/local/bin/airmon-server -config /etc/airmon-server/config.yaml
+ExecStart=/usr/local/bin/almatyaqi-server -config /etc/almatyaqi-server/config.yaml
 # The config is read only at start (there is no reload): use `systemctl restart`
 # after changing it or the key.
 Restart=on-failure
@@ -19,11 +19,11 @@ DynamicUser=yes
 
 # The AAI API key. Keep it in a root-only file and let systemd hand a private
 # copy to the service; the config must NOT contain the key itself:
-#   aai.key_file: /run/credentials/airmon-server.service/aai_key
+#   aai.key_file: /run/credentials/almatyaqi-server.service/aai_key
 # (the config does not expand environment variables, so use the absolute path;
 # the name after the colon below is the file name inside the credentials dir).
-# Create the source file with: install -m 0600 -o root -g root /dev/null /etc/airmon-server/aai_key
-LoadCredential=aai_key:/etc/airmon-server/aai_key
+# Create the source file with: install -m 0600 -o root -g root /dev/null /etc/almatyaqi-server/aai_key
+LoadCredential=aai_key:/etc/almatyaqi-server/aai_key
 
 # TLS is terminated by nginx in front of the server; the server speaks plain HTTP
 # on 127.0.0.1 (default port 8790, above 1024, so no capabilities are needed).

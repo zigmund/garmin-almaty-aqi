@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zigmund/garmin-airmon/server/internal/cache"
-	"github.com/zigmund/garmin-airmon/server/internal/city"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/city"
 )
 
 type budgetFunc func(context.Context) error

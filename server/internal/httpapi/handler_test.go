@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zigmund/garmin-airmon/server/internal/cache"
-	"github.com/zigmund/garmin-airmon/server/internal/city"
-	"github.com/zigmund/garmin-airmon/server/internal/service"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/city"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/service"
 )
 
 var t0 = time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)

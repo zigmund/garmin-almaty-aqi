@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zigmund/garmin-airmon/server/internal/cache"
-	"github.com/zigmund/garmin-airmon/server/internal/city"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/city"
 )
 
 // ErrUpstream marks any failure caused by the upstream API or its data.

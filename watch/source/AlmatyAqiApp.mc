@@ -6,7 +6,7 @@ import Toybox.Lang;
 import Toybox.WatchUi;
 
 (:glance, :background)
-class AirMonApp extends Application.AppBase {
+class AlmatyAqiApp extends Application.AppBase {
     function initialize() {
         AppBase.initialize();
     }

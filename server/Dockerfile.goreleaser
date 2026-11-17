@@ -2,8 +2,8 @@
 # context under <os>/<arch>/, so one Dockerfile serves both platforms.
 FROM gcr.io/distroless/static:nonroot
 ARG TARGETPLATFORM
-COPY $TARGETPLATFORM/airmon-server /airmon-server
+COPY $TARGETPLATFORM/almatyaqi-server /almatyaqi-server
 USER nonroot
 EXPOSE 8790
-ENTRYPOINT ["/airmon-server"]
-CMD ["-config", "/etc/airmon-server/config.yaml"]
+ENTRYPOINT ["/almatyaqi-server"]
+CMD ["-config", "/etc/almatyaqi-server/config.yaml"]

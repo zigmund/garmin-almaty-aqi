@@ -15,9 +15,9 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/zigmund/garmin-airmon/server/internal/aai"
-	"github.com/zigmund/garmin-airmon/server/internal/cache"
-	"github.com/zigmund/garmin-airmon/server/internal/city"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/aai"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/city"
 )
 
 var t0 = time.Date(2026, 11, 17, 10, 0, 0, 0, time.UTC)
@@ -395,7 +395,7 @@ func TestTwoReplicasOneFetch(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 		t.Cleanup(func() { _ = rdb.Close() })
-		svcs = append(svcs, New(cache.NewRedis(rdb, "airmon:", 80, c.Now), up, opts(c)))
+		svcs = append(svcs, New(cache.NewRedis(rdb, "almatyaqi:", 80, c.Now), up, opts(c)))
 	}
 	var wg sync.WaitGroup
 	errs := make(chan error, 40)
@@ -420,7 +420,7 @@ func TestTwoReplicasOneFetch(t *testing.T) {
 	if n := up.nMap.Load(); n != 1 {
 		t.Fatalf("Map calls = %d, want 1", n)
 	}
-	if mr.Exists("airmon:lock:almaty-map") {
+	if mr.Exists("almatyaqi:lock:almaty-map") {
 		t.Fatal("lock not released")
 	}
 }
@@ -753,7 +753,7 @@ func TestFailCooldownTwoReplicas(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 		t.Cleanup(func() { _ = rdb.Close() })
-		svcs = append(svcs, New(cache.NewRedis(rdb, "airmon:", 80, c.Now), up, opts(c)))
+		svcs = append(svcs, New(cache.NewRedis(rdb, "almatyaqi:", 80, c.Now), up, opts(c)))
 	}
 	for i := 0; i < 6; i++ {
 		if _, err := svcs[i%2].Get(ctx, Glance, city.Almaty); !errors.Is(err, ErrUnavailable) {

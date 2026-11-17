@@ -37,7 +37,7 @@ func TestLoadDefaults(t *testing.T) {
 		c.Cache.StaleTTL != 2*time.Hour || c.Cache.LockWait != 5*time.Second {
 		t.Errorf("cache = %+v", c.Cache)
 	}
-	if c.Redis.Addr != "127.0.0.1:6379" || c.Redis.PasswordFile != "" || c.Redis.DB != 0 || c.Redis.Prefix != "airmon:" {
+	if c.Redis.Addr != "127.0.0.1:6379" || c.Redis.PasswordFile != "" || c.Redis.DB != 0 || c.Redis.Prefix != "almatyaqi:" {
 		t.Errorf("redis = %+v", c.Redis)
 	}
 	if c.Budget.PerHour != 80 {

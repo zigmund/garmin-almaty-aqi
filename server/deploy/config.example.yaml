@@ -1,4 +1,4 @@
-# airmon-server example configuration. Every key is optional except aai.key_file;
+# almatyaqi-server example configuration. Every key is optional except aai.key_file;
 # the values below are the defaults. Unknown keys are rejected at startup.
 
 # Address the HTTP server binds to (nginx terminates TLS in front of it).
@@ -16,7 +16,7 @@ aai:
   # This path is where the bundled systemd unit (LoadCredential=aai_key:...)
   # exposes the file; in k8s mount a Secret as a file and point this at it.
   # A relative path is resolved against this config file's directory.
-  key_file: /run/credentials/airmon-server.service/aai_key
+  key_file: /run/credentials/almatyaqi-server.service/aai_key
   timeout: 8s                               # per upstream request, at most 2m
 
 cache:
@@ -32,7 +32,7 @@ cache:
 #   addr: 127.0.0.1:6379
 #   password_file: /run/secrets/redis_password   # optional, a file (never inline)
 #   db: 0
-#   prefix: "airmon:"
+#   prefix: "almatyaqi:"
 
 # Hard ceiling on upstream requests per sliding hour (1..100). With redis the
 # budget is shared by all replicas. With the memory backend it is per process:

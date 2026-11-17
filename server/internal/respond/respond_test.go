@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zigmund/garmin-airmon/server/internal/aai"
-	"github.com/zigmund/garmin-airmon/server/internal/city"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/aai"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/city"
 )
 
 var (
