@@ -25,7 +25,7 @@ module GlanceData {
         return t instanceof Number ? t : null;
     }
 
-    // Unix time of the data: receive time minus the proxy's age "a"; a bad "a" means rx.
+    // Unix time of the data: receive time minus the server's age "a"; a bad "a" means rx.
     function dataTime(a as Object?, rxSec as Number) as Number {
         return (a instanceof Number && a >= 0) ? rxSec - a : rxSec;
     }

@@ -59,7 +59,7 @@ func Heatmap(cc city.Code, st []aai.Station, t, now time.Time) (cache.Entry, err
 
 func round4(x float64) float64 { return math.Round(x*1e4) / 1e4 }
 
-// computeGrid ports compute() of proxy/src/heatmap.ts: cell centers,
+// computeGrid builds the heat map grid: cell centers,
 // equirectangular distance (cos of the pair's mean latitude), K nearest
 // stations (ties keep station order), NO_DATA beyond 3 km, IDW 1/d^2.
 func computeGrid(bbox [4]float64, st []aai.Station) []byte {

@@ -68,16 +68,16 @@ jobs:
     env:
       VERSION: ${{ needs.version.outputs.version }}
       COMMIT: ${{ needs.version.outputs.commit }}
-      PROXY_URL: ${{ vars.PROXY_URL }}
+      SERVER_URL: ${{ vars.SERVER_URL }}
     steps:
       - uses: actions/checkout@v5
 
-      # The watch talks to this server; a release pointing at localhost would be useless, and the
-      # legacy Worker (*.workers.dev) speaks the old API.
-      - name: Check PROXY_URL
+      # The watch talks to this server; a release pointing at localhost would be useless, and
+      # *.workers.dev was the retired Worker with the old API.
+      - name: Check SERVER_URL
         run: |
-          if [[ ! "$PROXY_URL" =~ ^https:// || "$PROXY_URL" == *localhost* || "$PROXY_URL" == *127.0.0.1* || "$PROXY_URL" == *.workers.dev* ]]; then
-            echo "::error::Repository variable PROXY_URL must be the deployed server URL: https://, not localhost and not a *.workers.dev Worker (got '${PROXY_URL}')"
+          if [[ ! "$SERVER_URL" =~ ^https:// || "$SERVER_URL" == *localhost* || "$SERVER_URL" == *127.0.0.1* || "$SERVER_URL" == *.workers.dev* ]]; then
+            echo "::error::Repository variable SERVER_URL must be the deployed server URL: https://, not localhost and not the retired *.workers.dev Worker (got '${SERVER_URL}')"
             exit 1
           fi
 
@@ -91,7 +91,7 @@ jobs:
           test -s "$RUNNER_TEMP/key/developer_key.der" || { echo "::error::Secret CIQ_DEVELOPER_KEY_BASE64 is missing"; exit 1; }
 
       - name: Build .iq and per-model .prg
-        run: scripts/ciq-docker.sh "$RUNNER_TEMP/key" set-manifest-version dist VERSION="$VERSION" COMMIT="$COMMIT" PROXY_URL="$PROXY_URL"
+        run: scripts/ciq-docker.sh "$RUNNER_TEMP/key" set-manifest-version dist VERSION="$VERSION" COMMIT="$COMMIT" SERVER_URL="$SERVER_URL"
 
       - uses: actions/upload-artifact@v5
         with:

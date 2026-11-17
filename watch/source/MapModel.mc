@@ -11,7 +11,7 @@ module MapModel {
         return GRAY;
     }
 
-    // [w, s, e, n] in degrees, same as proxy/src/cities.ts; unknown codes fall back to Almaty.
+    // [w, s, e, n] in degrees, same as server/internal/city; unknown codes fall back to Almaty.
     // Used only to frame the map before the first response arrives.
     function cityBbox(code as String) as Array<Float> {
         if (code.equals("karaganda")) { return [72.9, 49.7, 73.3, 49.95]; }
