@@ -1,6 +1,6 @@
 import Toybox.Lang;
 
-// Proxy request URLs. The position is sent rounded to 3 decimals (~100 m).
+// Server request URLs. The position is sent rounded to 3 decimals (~100 m).
 // Parameters (all optional): city=<place>, lat, lon.
 (:glance, :background)
 module Api {

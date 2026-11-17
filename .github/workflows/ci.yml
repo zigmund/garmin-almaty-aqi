@@ -56,28 +56,6 @@ jobs:
           version: '~> v2'
           args: release --snapshot --clean --skip=docker
 
-  proxy:
-    name: Proxy (Cloudflare Worker)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: proxy
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: proxy/package-lock.json
-
-      - run: npm ci
-
-      # Tests run on recorded fixtures: no AAI API key is needed or available here.
-      - run: npm test
-
-      - run: npm run typecheck
-
   watch:
     name: Watch app (sample devices)
     runs-on: ubuntu-latest

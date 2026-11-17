@@ -66,18 +66,15 @@ watch. The server logs no positions.
 
 ## Self-hosting the server
 
-`server/` is a Go server that replaces the Worker. It serves `/v1/glance` and `/v1/heatmap`
-(with a changed response format, see below) and is self-hosted. It keeps the AAI API key on the server (read from a file, never from
-the config or the image), caches ready responses (15 minutes fresh, served stale for up to
+`server/` is a self-hosted Go server that serves `/v1/glance` and `/v1/heatmap` to the watch
+app. It keeps the AAI API key on the server (read from a file, never from the config or the
+image), caches ready responses (15 minutes fresh, served stale for up to
 2 hours when AAI is unreachable) and spends AAI requests from a hard budget of 80 per sliding
 hour (`budget.per_hour`, at most 100) so a personal API key stays far below the provider's
 limit. `GET /healthz` answers 200 without calling AAI.
 
-The API is not the Worker's API any more: the `h`, `st`, `fb` and `me` fields are gone and
-the `nopos` answer is new. Old watch builds do not work with the new server, and new watch
-builds do not work with the old Worker; build the watch app against the server you deploy
-(see the nginx section for `PROXY_URL`). The Cloudflare Worker in `proxy/` is the legacy
-proxy that this server replaces; it still exists in the repository for now.
+The watch app is built against one server: build it with the URL of the server you deploy
+(see the nginx section for `PROXY_URL`).
 
 Config: copy [server/deploy/config.example.yaml](server/deploy/config.example.yaml) to
 `/etc/almatyaqi-server/config.yaml`; only `aai.key_file` is required, everything else has a
@@ -155,12 +152,6 @@ into archives with checksums and builds the Docker Hub images. The Release workf
 server and the watch app. By hand, on a tagged commit:
 `DOCKERHUB_IMAGE=<user>/almatyaqi-server goreleaser release --clean`.
 
-## Legacy Cloudflare Worker
-
-[proxy/](proxy/README.md) is the previous Cloudflare Worker implementation of the API. It is
-being replaced by the server above and is not the way to run the app. Its API differs from
-the server's, so a watch build must match the backend it talks to.
-
 ## Build
 
 Needs the Connect IQ SDK 9.3.0 (SDK Manager) and a developer key at
@@ -171,7 +162,6 @@ make -C watch build             # .prg for DEVICE (default fenix6pro), RELEASE=1
 make -C watch test              # unit tests in the Connect IQ simulator
 make -C watch sim               # run in the simulator
 make -C watch dist VERSION=0.0.0  # watch/dist: store package (.iq) + zip of per-model .prg
-npm --prefix proxy test         # proxy tests (fixtures, no API key needed)
 ```
 
 `PROXY_URL` defaults to this project's server, `https://garmin-almaty-aqi.zigmund.xyz`; a fork
@@ -188,14 +178,14 @@ tag `vX.Y.Z` with one GitHub release: `AlmatyAQI-X.Y.Z.iq` (upload it by hand at
 IQ developer dashboard), `AlmatyAQI-X.Y.Z-watch-prg.zip`, the server archives
 `almatyaqi-server_X.Y.Z_<os>_<arch>.tar.gz` with `checksums.txt`, and the Docker Hub images
 `X.Y.Z` and `latest` when Docker Hub is configured. CI (every push and pull request) runs the
-server's gofmt, vet, race tests and a goreleaser snapshot build, the proxy tests and watch
-builds for one model per screen class.
+server's gofmt, vet, race tests and a goreleaser snapshot build, and watch builds for one
+model per screen class.
 
 A fork must set up:
 
 - repository variable `PROXY_URL`: the deployed server URL. The release fails if it does
-  not start with `https://` or contains `localhost`, `127.0.0.1` or `.workers.dev` (the legacy
-  Worker speaks the old API);
+  not start with `https://` or contains `localhost`, `127.0.0.1` or `.workers.dev` (the retired
+  Worker with the old API);
 - secret `CIQ_DEVELOPER_KEY_BASE64` in the environment `release` (limited to `main`):
   `base64 -i ~/.connectiq/developer_key.der | pbcopy`. Store updates must be signed with the
   key of the first upload;

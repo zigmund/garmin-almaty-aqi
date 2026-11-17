@@ -29,12 +29,8 @@ watch/bin/
 watch/gen/
 watch/dist/
 
-# Proxy
-proxy/node_modules/
-proxy/.dev.vars
-proxy/.prod.vars
-proxy/.wrangler/
-
-# Server (Go)
+# Server (Go); AAI keys
+server/.dev.vars
+server/.prod.vars
 server/bin/
 dist/

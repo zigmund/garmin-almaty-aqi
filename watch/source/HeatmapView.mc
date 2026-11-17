@@ -100,7 +100,7 @@ class HeatmapView extends WatchUi.View {
 
         var you = HeatmapModel.meFrac(bbox, _fetch.pos());
 
-        // Header time is the data time (receipt time minus the proxy's age), local clock.
+        // Header time is the data time (receipt time minus the server's age), local clock.
         var dt = Time.Gregorian.info(new Time.Moment(GlanceData.dataTime(data["a"], Time.now().value())), Time.FORMAT_SHORT);
         _grid = grid;
         _gw = w;
