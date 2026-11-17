@@ -44,24 +44,6 @@ module GlanceData {
         return [(mins / 60).toString(), true];
     }
 
-    // Two lines for a label too wide for one: split at the space that best balances the line
-    // lengths (in characters). Null when there is no space.
-    function splitTwo(s as String) as [String, String]? {
-        var cs = s.toCharArray();
-        var n = cs.size();
-        var best = -1;
-        var bestD = n;
-        for (var i = 0; i < n; i++) {
-            if (cs[i] == ' ') {
-                var d = n - 1 - 2 * i;
-                if (d < 0) { d = -d; }
-                if (d < bestD) { bestD = d; best = i; }
-            }
-        }
-        if (best < 0) { return null; }
-        return [s.substring(0, best) as String, s.substring(best + 1, n) as String];
-    }
-
     function isStale(d as Dictionary, nowSec as Number) as Boolean {
         var t = stamp(d);
         if (t == null) { return true; }

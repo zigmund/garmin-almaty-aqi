@@ -101,20 +101,3 @@ function ageShowsMinutesThenWholeHours(logger as Logger) as Boolean {
     Test.assertEqual(n[1], false);
     return true;
 }
-
-(:test)
-function splitTwoBalancesLines(logger as Logger) as Boolean {
-    var cases = [
-        ["Unhealthy (sensitive)", "Unhealthy", "(sensitive)"],
-        ["Unhealthy for sensitive groups", "Unhealthy for", "sensitive groups"],
-        ["Нездоровый для чувствительных групп", "Нездоровый для", "чувствительных групп"]
-    ];
-    for (var i = 0; i < cases.size(); i++) {
-        var c = cases[i] as Array;
-        var p = GlanceData.splitTwo(c[0] as String) as Array;
-        Test.assertEqual(p[0], c[1]);
-        Test.assertEqual(p[1], c[2]);
-    }
-    Test.assert(GlanceData.splitTwo("Good") == null);
-    return true;
-}
