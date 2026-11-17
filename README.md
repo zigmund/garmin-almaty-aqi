@@ -140,6 +140,8 @@ location /v1/ {
 `access_log off;` matters: the default log format records `$request`, which includes the
 query string with the position. If you need an access log, use a `log_format` without `$args`
 and `$request`.
+To check that watches reach the server, set `log.requests: true` in the server config for a
+while: it logs every request with its query string, so the position ends up in the log too.
 
 Build the watch app with `PROXY_URL=https://your-host.example` (the watch app is built
 against exactly one server: the default URL is this project's server,
@@ -174,7 +176,8 @@ npm --prefix proxy test         # proxy tests (fixtures, no API key needed)
 
 `PROXY_URL` defaults to this project's server, `https://garmin-almaty-aqi.zigmund.xyz`; a fork
 sets its own (for a local one, `PROXY_URL=http://localhost:8790` with the server binary
-running).
+running; the simulator then needs Settings -> "Use Device HTTPS Requirements" turned off, or
+it refuses plain `http://` requests).
 `scripts/ciq-docker.sh KEY_DIR <make args>` runs a watch build in the same Docker image as CI.
 
 ## Releases

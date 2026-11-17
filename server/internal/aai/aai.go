@@ -88,7 +88,7 @@ func (c *Client) get(ctx context.Context, path, query string) ([]byte, error) {
 	// One Info line per upstream request. Only the path is logged: never the
 	// query, the URL, headers or the key.
 	defer func() {
-		c.log.Info("aai request", "path", path, "status", status,
+		c.log.Info("request out", "dir", "out", "upstream", "aai", "path", path, "status", status,
 			"duration", time.Since(start).Round(time.Millisecond), "outcome", outcome)
 	}()
 	ctx, cancel := context.WithTimeout(ctx, c.timeout)

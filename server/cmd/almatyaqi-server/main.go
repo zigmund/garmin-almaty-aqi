@@ -122,9 +122,13 @@ func run(cfgPath string) error {
 		Log:      log,
 	})
 
+	var h http.Handler = httpapi.New(svc, now, log, httpapi.WithRequestTimeout(requestTimeout))
+	if cfg.Log.Requests {
+		h = httpapi.LogRequests(h, log, now)
+	}
 	srv := &http.Server{
 		Addr:              cfg.Listen,
-		Handler:           httpapi.New(svc, now, log, httpapi.WithRequestTimeout(requestTimeout)),
+		Handler:           h,
 		ReadHeaderTimeout: 5 * time.Second,
 		WriteTimeout:      writeTimeout,
 		IdleTimeout:       60 * time.Second,
@@ -132,7 +136,7 @@ func run(cfgPath string) error {
 	log.Info("starting", "version", version, "listen", cfg.Listen,
 		"backend", cfg.Cache.Backend, "ttl", cfg.Cache.TTL, "stale_ttl", cfg.Cache.StaleTTL,
 		"lock_wait", cfg.Cache.LockWait, "budget.per_hour", cfg.Budget.PerHour,
-		"aai.timeout", cfg.AAI.Timeout)
+		"aai.timeout", cfg.AAI.Timeout, "log.requests", cfg.Log.Requests)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

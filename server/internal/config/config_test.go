@@ -27,7 +27,7 @@ func TestLoadDefaults(t *testing.T) {
 	if c.Listen != "127.0.0.1:8790" {
 		t.Errorf("listen = %q", c.Listen)
 	}
-	if c.Log.Level != "info" || c.Log.Format != "json" {
+	if c.Log.Level != "info" || c.Log.Format != "json" || c.Log.Requests {
 		t.Errorf("log = %+v", c.Log)
 	}
 	if c.AAI.BaseURL != "https://backend.air.org.kz/v1" || c.AAI.KeyFile != "/run/key" || c.AAI.Timeout != 8*time.Second {
@@ -145,5 +145,16 @@ func TestUnknownFieldErrorHidesValue(t *testing.T) {
 	_, err := Load(p)
 	if err == nil || strings.Contains(err.Error(), "hunter2") {
 		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestLoadLogRequests(t *testing.T) {
+	p := writeFile(t, t.TempDir(), "c.yaml", "aai: {key_file: /k}\nlog: {requests: true}\n")
+	c, err := Load(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !c.Log.Requests {
+		t.Errorf("log.requests = false, want true")
 	}
 }

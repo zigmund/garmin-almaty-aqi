@@ -8,6 +8,10 @@ listen: 127.0.0.1:8790
 log:
   level: info    # debug|info|warn|error
   format: json   # json|text
+  # Log every incoming request (method, path, query, status, bytes, duration, user agent).
+  # Off by default: the query string carries the watch position. Turn it on only to check
+  # that watches reach the server.
+  requests: false
 
 # Almaty Air Initiative (AAI) upstream API.
 aai:
