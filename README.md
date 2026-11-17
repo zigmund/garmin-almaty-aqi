@@ -176,7 +176,8 @@ npm --prefix proxy test         # proxy tests (fixtures, no API key needed)
 
 `PROXY_URL` defaults to this project's server, `https://garmin-almaty-aqi.zigmund.xyz`; a fork
 sets its own (for a local one, `PROXY_URL=http://localhost:8790` with the server binary
-running).
+running; the simulator then needs Settings -> "Use Device HTTPS Requirements" turned off, or
+it refuses plain `http://` requests).
 `scripts/ciq-docker.sh KEY_DIR <make args>` runs a watch build in the same Docker image as CI.
 
 ## Releases
