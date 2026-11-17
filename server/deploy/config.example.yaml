@@ -25,7 +25,7 @@ aai:
 
 cache:
   backend: memory   # memory | redis (use redis when running several replicas)
-  ttl: 15m          # fresh lifetime of a cached response (at least 1m)
+  ttl: 5m           # fresh lifetime of a cached response (at least 1m)
   stale_ttl: 2h     # total lifetime; stale data is served within it (at least ttl)
   lock_wait: 5s     # how long to wait for another replica refreshing the same group
                     # (at most 2*aai.timeout + 5s, the fill lock TTL)
