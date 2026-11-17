@@ -1,0 +1,61 @@
+[Unit]
+Description=airmon-server (air quality API for the Almaty AQI Garmin widget)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+ExecStart=/usr/local/bin/airmon-server -config /etc/airmon-server/config.yaml
+# The config is read only at start (there is no reload): use `systemctl restart`
+# after changing it or the key.
+Restart=on-failure
+RestartSec=2s
+# SIGTERM starts a graceful shutdown: in-flight requests get up to 20 s to
+# finish. 35 s leaves headroom before systemd sends SIGKILL; keep it above 20 s.
+TimeoutStopSec=35s
+
+# Run as a transient unprivileged user; no state is written to disk.
+DynamicUser=yes
+
+# The AAI API key. Keep it in a root-only file and let systemd hand a private
+# copy to the service; the config must NOT contain the key itself:
+#   aai.key_file: /run/credentials/airmon-server.service/aai_key
+# (the config does not expand environment variables, so use the absolute path;
+# the name after the colon below is the file name inside the credentials dir).
+# Create the source file with: install -m 0600 -o root -g root /dev/null /etc/airmon-server/aai_key
+LoadCredential=aai_key:/etc/airmon-server/aai_key
+
+# TLS is terminated by nginx in front of the server; the server speaks plain HTTP
+# on 127.0.0.1 (default port 8790, above 1024, so no capabilities are needed).
+
+# --- Hardening ---
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+# Outbound HTTPS to AAI and inbound TCP only. The server talks to Redis over TCP
+# only, so AF_UNIX is not needed (it would be only if unix-socket Redis support
+# is ever added).
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+# Go binaries do not need W+X mappings.
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

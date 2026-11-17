@@ -1,0 +1,8 @@
+{"data":[
+{"location_id":167665,"location_name":"ok","latitude":43.2937,"longitude":76.9154,"pm25_avg":49.7,"aqi":136},
+{"location_id":1,"latitude":43.3,"longitude":76.9,"pm25_avg":-1},
+{"location_id":2,"pm25_avg":10.0},
+{"location_id":"x","latitude":43.3,"longitude":76.9,"pm25_avg":10.0},
+{"location_id":3,"latitude":43.3,"longitude":76.9,"pm25_avg":null},
+{"location_id":4,"latitude":43.31,"longitude":76.91,"pm25_avg":0}
+],"meta":{"is_fallback":false,"window_end":"2026-11-17T04:15:00+00:00"}}

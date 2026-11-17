@@ -1,0 +1,6 @@
+name = "airmon-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+[vars]
+AAI_BASE = "https://backend.air.org.kz/v1"

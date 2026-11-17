@@ -1,0 +1,11 @@
+<drawables>
+    <bitmap id="LauncherIcon" filename="launcher_icon.svg" dithering="none"/>
+    <!-- Map markers (scripts/gen-markers.py); pixel-exact, so no dithering. -->
+    <bitmap id="Marker0" filename="marker_0.svg" dithering="none"/>
+    <bitmap id="Marker1" filename="marker_1.svg" dithering="none"/>
+    <bitmap id="Marker2" filename="marker_2.svg" dithering="none"/>
+    <bitmap id="Marker3" filename="marker_3.svg" dithering="none"/>
+    <bitmap id="Marker4" filename="marker_4.svg" dithering="none"/>
+    <bitmap id="Marker5" filename="marker_5.svg" dithering="none"/>
+    <bitmap id="MarkerGray" filename="marker_6.svg" dithering="none"/>
+</drawables>

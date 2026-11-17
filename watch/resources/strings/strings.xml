@@ -1,0 +1,20 @@
+<strings>
+    <string id="AppName">Almaty AQI</string>
+    <string id="NoData" scope="glance">No data</string>
+    <string id="OutOfZone" scope="glance">Out of coverage</string>
+    <string id="NoPos" scope="glance">No location — open the widget</string>
+    <string id="NoPosShort" scope="glance">No location</string>
+    <string id="MinAgo" scope="glance">$1$ min ago</string>
+    <string id="MinShort" scope="glance">$1$m</string>
+    <string id="Loading">Loading…</string>
+    <string id="Title" scope="glance">AIR QUALITY</string>
+    <string id="Unit" scope="glance">AQI</string>
+    <string id="Cat0" scope="glance">Good</string>
+    <string id="Cat1" scope="glance">Moderate</string>
+    <string id="Cat2" scope="glance">Unhealthy for sensitive groups</string>
+    <string id="Cat2Mid" scope="glance">Unhealthy for sensitive</string>
+    <string id="Cat2Short" scope="glance">Unhealthy (sensitive)</string>
+    <string id="Cat3" scope="glance">Unhealthy</string>
+    <string id="Cat4" scope="glance">Very unhealthy</string>
+    <string id="Cat5" scope="glance">Hazardous</string>
+</strings>

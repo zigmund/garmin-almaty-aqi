@@ -1,0 +1,7 @@
+{"data":[
+{"station_id":"a","ts":"2026-11-17T09:00:00Z","pm25_concentration":114.0,"latitude":49.9607,"longitude":73.1994},
+{"station_id":"b","ts":"2026-11-17T08:59:00Z","pm25_concentration":50.0,"latitude":49.9,"longitude":73.1},
+{"station_id":"c","ts":null,"pm25_concentration":null,"latitude":49.9,"longitude":73.1},
+{"station_id":"d","ts":"2026-11-17T11:00:00Z","pm25_concentration":null,"latitude":49.9,"longitude":73.1},
+{"station_id":"e","ts":"2026-11-17T11:00:00Z","pm25_concentration":20.0,"latitude":49.9}
+]}

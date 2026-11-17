@@ -1,0 +1,9 @@
+# Used by goreleaser (dockers_v2): it places each prebuilt binary in the build
+# context under <os>/<arch>/, so one Dockerfile serves both platforms.
+FROM gcr.io/distroless/static:nonroot
+ARG TARGETPLATFORM
+COPY $TARGETPLATFORM/airmon-server /airmon-server
+USER nonroot
+EXPOSE 8790
+ENTRYPOINT ["/airmon-server"]
+CMD ["-config", "/etc/airmon-server/config.yaml"]
