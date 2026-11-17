@@ -14,7 +14,8 @@ server that hides the API key, caches responses and keeps the watch traffic tiny
 
 The index is the US AQI computed from PM2.5 (EPA 2024 breakpoints). Gray means no data or
 data older than 30 minutes, counted from the time of the measurement (the glance then
-grays out its scale and shows "N min ago" instead of the category name).
+grays out its scale and shows "N min ago", or "N h ago" after an hour, instead of the
+category name).
 
 | Category | AQI | Color |
 |---|---|---|

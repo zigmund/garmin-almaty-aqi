@@ -5,7 +5,9 @@
     <string id="NoPos" scope="glance">No location — open the widget</string>
     <string id="NoPosShort" scope="glance">No location</string>
     <string id="MinAgo" scope="glance">$1$ min ago</string>
-    <string id="MinShort" scope="glance">$1$m</string>
+    <string id="MinShort" scope="glance">$1$ min</string>
+    <string id="HourAgo" scope="glance">$1$ h ago</string>
+    <string id="HourShort" scope="glance">$1$ h</string>
     <string id="Loading">Loading…</string>
     <string id="Title" scope="glance">AIR QUALITY</string>
     <string id="Unit" scope="glance">AQI</string>

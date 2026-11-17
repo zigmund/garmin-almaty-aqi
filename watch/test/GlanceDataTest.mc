@@ -86,3 +86,18 @@ function placeToStoreRemembersOut(logger as Logger) as Boolean {
     Test.assert(GlanceData.placeToStore({"m" => "city"}) == null);
     return true;
 }
+
+(:test)
+function ageShowsMinutesThenWholeHours(logger as Logger) as Boolean {
+    var cases = [[0, "0", false], [59, "59", false], [60, "1", true], [119, "1", true], [120, "2", true]];
+    for (var i = 0; i < cases.size(); i++) {
+        var c = cases[i] as Array;
+        var a = GlanceData.ageParts(c[0] as Number);
+        Test.assertEqual(a[0], c[1]);
+        Test.assertEqual(a[1], c[2]);
+    }
+    var n = GlanceData.ageParts(GlanceData.NEVER_MIN);
+    Test.assertEqual(n[0], "?");
+    Test.assertEqual(n[1], false);
+    return true;
+}

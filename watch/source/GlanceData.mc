@@ -37,6 +37,13 @@ module GlanceData {
         return age < 0 ? 0 : age / 60;
     }
 
+    // Age for display: [value, inHours]. Whole hours (floor) from 60 min; "?" when never received.
+    function ageParts(mins as Number) as [String, Boolean] {
+        if (mins >= NEVER_MIN) { return ["?", false]; }
+        if (mins < 60) { return [mins.toString(), false]; }
+        return [(mins / 60).toString(), true];
+    }
+
     function isStale(d as Dictionary, nowSec as Number) as Boolean {
         var t = stamp(d);
         if (t == null) { return true; }
