@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zigmund/garmin-airmon/server/internal/cache"
-	"github.com/zigmund/garmin-airmon/server/internal/cache/cachetest"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache/cachetest"
 )
 
 func TestMemoryContract(t *testing.T) {

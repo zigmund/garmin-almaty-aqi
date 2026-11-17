@@ -1,4 +1,4 @@
-// Package config loads, defaults and validates the airmon-server YAML config.
+// Package config loads, defaults and validates the almatyaqi-server YAML config.
 package config
 
 import (
@@ -30,7 +30,7 @@ const (
 	DefaultStaleTTL    = 2 * time.Hour
 	DefaultLockWait    = 5 * time.Second
 	DefaultRedisAddr   = "127.0.0.1:6379"
-	DefaultRedisPrefix = "airmon:"
+	DefaultRedisPrefix = "almatyaqi:"
 	DefaultPerHour     = 80
 
 	// MaxPerHour is the largest accepted budget.per_hour: a hard ceiling on

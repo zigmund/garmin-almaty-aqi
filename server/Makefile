@@ -1,5 +1,5 @@
-BINARY  := airmon-server
-CMD     := ./cmd/airmon-server
+BINARY  := almatyaqi-server
+CMD     := ./cmd/almatyaqi-server
 BIN_DIR := bin
 VERSION ?= $(shell git describe --tags --match 'v[0-9]*' --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -s -w -X main.version=$(VERSION)

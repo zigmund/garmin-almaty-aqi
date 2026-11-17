@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zigmund/garmin-airmon/server/internal/cache"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache"
 )
 
 // PerHour is the budget limit every implementation must be built with.

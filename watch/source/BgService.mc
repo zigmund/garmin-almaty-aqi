@@ -3,7 +3,7 @@ import Toybox.Communications;
 import Toybox.Lang;
 import Toybox.System;
 
-// Fetches /v1/glance every 5 minutes and hands the result to AirMonApp.onBackgroundData.
+// Fetches /v1/glance every 5 minutes and hands the result to AlmatyAqiApp.onBackgroundData.
 // The position comes from the weather observation (WxPos); none is sent when it is unavailable.
 (:background)
 class BgService extends System.ServiceDelegate {

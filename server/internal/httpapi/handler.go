@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/zigmund/garmin-airmon/server/internal/cache"
-	"github.com/zigmund/garmin-airmon/server/internal/city"
-	"github.com/zigmund/garmin-airmon/server/internal/service"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/city"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/service"
 )
 
 // Getter returns the ready response for a kind and city (service.Service).

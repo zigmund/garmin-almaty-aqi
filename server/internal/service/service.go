@@ -28,10 +28,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/zigmund/garmin-airmon/server/internal/aai"
-	"github.com/zigmund/garmin-airmon/server/internal/cache"
-	"github.com/zigmund/garmin-airmon/server/internal/city"
-	"github.com/zigmund/garmin-airmon/server/internal/respond"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/aai"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/city"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/respond"
 )
 
 // Kind is the response kind.

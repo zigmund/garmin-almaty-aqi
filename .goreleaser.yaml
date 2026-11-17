@@ -3,13 +3,13 @@
 # Run manually by the owner; CI is not set up yet.
 version: 2
 
-project_name: airmon-server
+project_name: almatyaqi-server
 
 builds:
-  - id: airmon-server
+  - id: almatyaqi-server
     dir: server
-    main: ./cmd/airmon-server
-    binary: airmon-server
+    main: ./cmd/almatyaqi-server
+    binary: almatyaqi-server
     env:
       - CGO_ENABLED=0
     flags:
@@ -43,10 +43,10 @@ archives:
           mtime: '{{ .CommitDate }}'
 
 # Docker Hub images (linux/amd64 + linux/arm64). Set DOCKERHUB_IMAGE, e.g.
-# `<user>/airmon-server`, and log in to Docker Hub before releasing.
+# `<user>/almatyaqi-server`, and log in to Docker Hub before releasing.
 dockers_v2:
-  - id: airmon-server
-    ids: [airmon-server]
+  - id: almatyaqi-server
+    ids: [almatyaqi-server]
     dockerfile: server/Dockerfile.goreleaser
     images:
       - '{{ .Env.DOCKERHUB_IMAGE }}'

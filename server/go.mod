@@ -1,4 +1,4 @@
-module github.com/zigmund/garmin-airmon/server
+module github.com/zigmund/garmin-almaty-aqi/server
 
 go 1.27
 

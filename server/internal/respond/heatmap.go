@@ -5,10 +5,10 @@ import (
 	"math"
 	"time"
 
-	"github.com/zigmund/garmin-airmon/server/internal/aai"
-	"github.com/zigmund/garmin-airmon/server/internal/aqi"
-	"github.com/zigmund/garmin-airmon/server/internal/cache"
-	"github.com/zigmund/garmin-airmon/server/internal/city"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/aai"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/aqi"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/cache"
+	"github.com/zigmund/garmin-almaty-aqi/server/internal/city"
 )
 
 const (
