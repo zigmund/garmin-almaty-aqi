@@ -32,4 +32,18 @@ module HeatmapModel {
         // Fractions are non-negative here, so +0.5 and truncation rounds half up.
         return [ox + (fx * side + 0.5).toNumber(), oy + (fy * side + 0.5).toNumber()];
     }
+
+    // Position [lat, lon] -> fractions [fx, fy] of bbox [w, s, e, n] (y down from the top), or null
+    // when the position is null or outside the bbox.
+    function meFrac(bbox as Array, pos as Array?) as Array? {
+        if (pos == null) { return null; }
+        var w = bbox[0].toFloat();
+        var s = bbox[1].toFloat();
+        var e = bbox[2].toFloat();
+        var n = bbox[3].toFloat();
+        var lat = (pos[0] as Number or Float or Double).toFloat();
+        var lon = (pos[1] as Number or Float or Double).toFloat();
+        if (lon < w || lon > e || lat < s || lat > n) { return null; }
+        return [(lon - w) / (e - w), (n - lat) / (n - s)];
+    }
 }

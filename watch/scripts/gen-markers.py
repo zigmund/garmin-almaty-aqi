@@ -5,7 +5,6 @@ marker_0..5.svg: one per AQI category, marker_6.svg: gray (no data). Each is a p
 12x12 disc with every other pixel transparent (checkerboard): MIP screens have only 1-bit
 transparency, so the dither stands in for a semi-transparent dot and the map shows through.
 1x1 rects on the pixel grid plus dithering="none" in drawables.xml keep it crisp.
-marker_me.svg: the user's position, a white ring with a dark outline and a blue center.
 Colors match Aqi.color in source/Aqi.mc.
 """
 import os
@@ -27,13 +26,6 @@ def checker(color):
             f'viewBox="0 0 {SIZE} {SIZE}" shape-rendering="crispEdges"><g fill="#{color}">{rects}</g></svg>\n')
 
 
-ME = ('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">'
-      '<circle cx="8" cy="8" r="6.5" fill="none" stroke="#000000" stroke-width="3"/>'
-      '<circle cx="8" cy="8" r="6.5" fill="none" stroke="#FFFFFF" stroke-width="1.2"/>'
-      '<circle cx="8" cy="8" r="2" fill="#0000FF"/></svg>\n')
-
 for i, c in enumerate(COLORS):
     with open(os.path.join(OUT, f"marker_{i}.svg"), "w") as f:
         f.write(checker(c))
-with open(os.path.join(OUT, "marker_me.svg"), "w") as f:
-    f.write(ME)

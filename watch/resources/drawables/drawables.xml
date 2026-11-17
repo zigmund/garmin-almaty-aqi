@@ -8,5 +8,4 @@
     <bitmap id="Marker4" filename="marker_4.svg" dithering="none"/>
     <bitmap id="Marker5" filename="marker_5.svg" dithering="none"/>
     <bitmap id="MarkerGray" filename="marker_6.svg" dithering="none"/>
-    <bitmap id="MarkerMe" filename="marker_me.svg"/>
 </drawables>

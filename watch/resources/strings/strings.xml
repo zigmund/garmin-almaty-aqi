@@ -2,6 +2,8 @@
     <string id="AppName">AirMon</string>
     <string id="NoData" scope="glance">No data</string>
     <string id="OutOfZone" scope="glance">Out of coverage</string>
+    <string id="NoPos" scope="glance">No location — open the widget</string>
+    <string id="NoPosShort" scope="glance">No location</string>
     <string id="MinAgo" scope="glance">$1$ min ago</string>
     <string id="MinShort" scope="glance">$1$m</string>
     <string id="Loading">Loading…</string>

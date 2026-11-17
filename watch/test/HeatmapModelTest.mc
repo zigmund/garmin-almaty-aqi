@@ -63,3 +63,14 @@ function heatmapToPx(logger as Logger) as Boolean {
     Test.assertEqual(p[1], 130);
     return true;
 }
+
+(:test)
+function heatmapMeFrac(logger as Logger) as Boolean {
+    var bb = [76.6, 43.14, 77.26, 43.5];
+    var c = HeatmapModel.meFrac(bb, [43.32, 76.93]);
+    Test.assert(c != null);
+    Test.assert((c[0] - 0.5).abs() < 0.001 && (c[1] - 0.5).abs() < 0.001);
+    Test.assert(HeatmapModel.meFrac(bb, [50.0, 76.93]) == null);
+    Test.assert(HeatmapModel.meFrac(bb, null) == null);
+    return true;
+}

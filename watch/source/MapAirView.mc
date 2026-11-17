@@ -5,10 +5,11 @@ import Toybox.System;
 import Toybox.WatchUi;
 
 // Full-screen city map on devices with Garmin maps: the device's own map with one checkerboard
-// marker per station (colored by AQI category) and the user's position. Same /v1/heatmap data
-// as HeatmapView, which remains the screen on devices without MapView. Foreground only.
+// marker per station (colored by AQI category); the map shows the user's position itself.
+// Same /v1/heatmap data as HeatmapView, which remains the screen on devices without MapView.
+// Foreground only.
 class MapAirView extends WatchUi.MapView {
-    private enum { LOADING, OUT, ERROR, MAP }
+    private enum { LOADING, OUT, NOPOS, ERROR, MAP }
 
     private var _state as Number = LOADING;
     private var _fetch as HeatmapFetch;
@@ -18,8 +19,12 @@ class MapAirView extends WatchUi.MapView {
         MapView.initialize();
         setMapMode(WatchUi.MAP_MODE_PREVIEW);
         _fetch = new HeatmapFetch(method(:onResp));
-        // Frame the last known city until the first response arrives.
-        setArea(MapModel.cityBbox(Store.lastCity()));
+        // Frame the last known city until the first response arrives; with no
+        // stored place (or "out") leave the map where it is.
+        var place = Store.place();
+        if (place != null && (place.equals("almaty") || place.equals("karaganda"))) {
+            setArea(MapModel.cityBbox(place));
+        }
     }
 
     function onShow() as Void {
@@ -35,13 +40,18 @@ class MapAirView extends WatchUi.MapView {
         var r = (code == 200 && data instanceof Dictionary) ? MapModel.parse(data) : null;
         if (r == null) {
             _state = ERROR;
+        } else if ((r["m"] as String).equals("nopos")) {
+            clear();
+            _hasMarkers = false;
+            _state = NOPOS;
         } else if ((r["m"] as String).equals("out")) {
+            Store.setPlace("out");
             clear();
             _hasMarkers = false;
             _state = OUT;
         } else {
             var c = (data as Dictionary)["c"];
-            if (c instanceof String) { Store.setLastCity(c); }
+            if (c instanceof String) { Store.setPlace(c); }
             showMarkers(r);
             _state = MAP;
         }
@@ -61,10 +71,6 @@ class MapAirView extends WatchUi.MapView {
             var k = p[2] as Number;
             if (bitmaps[k] == null) { bitmaps[k] = WatchUi.loadResource(icons[k]) as BitmapResource; }
             markers.add(marker(p[0] as Float, p[1] as Float, bitmaps[k] as BitmapResource));
-        }
-        var you = r["me"];
-        if (you instanceof Array) {
-            markers.add(marker(you[0] as Float, you[1] as Float, WatchUi.loadResource(Rez.Drawables.MarkerMe) as BitmapResource));
         }
         clear();
         setMapMarker(markers);
@@ -89,11 +95,12 @@ class MapAirView extends WatchUi.MapView {
     }
 
     function onUpdate(dc as Dc) as Void {
-        if (_state == OUT) {
-            // Out of coverage is explicit: no map, just the message (as on the grid heat map).
+        if (_state == OUT || _state == NOPOS) {
+            // Out of coverage / no position is explicit: no map, just the message (as on the grid heat map).
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
             dc.clear();
-            drawMessage(dc, WatchUi.loadResource(Rez.Strings.OutOfZone) as String, Aqi.GRAY);
+            var id = _state == OUT ? Rez.Strings.OutOfZone : Rez.Strings.NoPosShort;
+            drawMessage(dc, WatchUi.loadResource(id) as String, Aqi.GRAY);
             return;
         }
         MapView.onUpdate(dc);

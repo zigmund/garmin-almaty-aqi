@@ -27,13 +27,14 @@ module MapModel {
         return [n - fy * (n - s), w + fx * (e - w)];
     }
 
-    // {"m" => "out"}, or {"m" => "map", "bbox" => [w, s, e, n], "st" => [[lat, lon, markerIndex], ...],
-    // "me" => [lat, lon] or null}; null for anything malformed.
+    // {"m" => "out"}, {"m" => "nopos"}, or {"m" => "map", "bbox" => [w, s, e, n],
+    // "st" => [[lat, lon, markerIndex], ...]}; null for anything malformed. "me" is not parsed.
     function parse(data as Dictionary) as Dictionary? {
         var m = data["m"];
         if (!(m instanceof String)) { return null; }
         if (m.equals("out")) { return {"m" => "out"}; }
-        if (!m.equals("near") && !m.equals("city")) { return null; }
+        if (m.equals("nopos")) { return {"m" => "nopos"}; }
+        if (!m.equals("city")) { return null; }
         var bb = data["bbox"];
         if (!(bb instanceof Array) || bb.size() != 4) { return null; }
         var bbox = new Array<Float>[4];
@@ -55,14 +56,7 @@ module MapModel {
             }
         }
 
-        var you = null;
-        var mv = data["me"];
-        if (mv instanceof Array && mv.size() == 2 && isNum(mv[0]) && isNum(mv[1])) {
-            var fx = mv[0].toFloat();
-            var fy = mv[1].toFloat();
-            if (fx >= 0.0 && fx <= 1.0 && fy >= 0.0 && fy <= 1.0) { you = fracToLatLon(bbox, fx, fy); }
-        }
-        return {"m" => "map", "bbox" => bbox, "st" => st, "me" => you};
+        return {"m" => "map", "bbox" => bbox, "st" => st};
     }
 
     function isNum(v) as Boolean {

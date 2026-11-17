@@ -13,21 +13,15 @@ module Store {
         Application.Storage.setValue("glance", d);
     }
 
-    function lastCity() as String {
+    // Last place the server reported: "almaty" | "karaganda" | "out", else null.
+    // Storage key stays "city" so values written by older builds still read.
+    function place() as String? {
         var v = Application.Storage.getValue("city");
-        return v instanceof String ? v : "almaty";
+        if (v instanceof String && (v.equals("almaty") || v.equals("karaganda") || v.equals("out"))) { return v; }
+        return null;
     }
 
-    function setLastCity(c as String) as Void {
-        Application.Storage.setValue("city", c);
-    }
-
-    function fix() as Array? {
-        var v = Application.Storage.getValue("fix");
-        return v instanceof Array ? v : null;
-    }
-
-    function setFix(f as Array) as Void {
-        Application.Storage.setValue("fix", f);
+    function setPlace(p as String) as Void {
+        Application.Storage.setValue("city", p);
     }
 }

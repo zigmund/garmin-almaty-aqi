@@ -25,8 +25,8 @@ class AirMonApp extends Application.AppBase {
         var d = GlanceData.onReceive(data, Time.now().value());
         if (d != null) {
             Store.setGlance(d);
-            var c = GlanceData.cityToStore(d);
-            if (c != null) { Store.setLastCity(c); }
+            var p = GlanceData.placeToStore(d);
+            if (p != null) { Store.setPlace(p); }
         }
         WatchUi.requestUpdate();
     }

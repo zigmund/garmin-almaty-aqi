@@ -3,7 +3,7 @@ import Toybox.Lang;
 // Shape and freshness of the stored /v1/glance payload. "rx" is the receive time (Unix s); "dt" the data time = rx - "a" (age at response).
 (:glance, :background)
 module GlanceData {
-    enum { NO_DATA, OUT, NEAR, CITY }
+    enum { NO_DATA, OUT, CITY, NOPOS }
 
     const STALE_SEC = 1800;
     const NEVER_MIN = 9999;
@@ -13,9 +13,9 @@ module GlanceData {
         var m = d["m"];
         if (!(m instanceof String)) { return NO_DATA; }
         if (m.equals("out")) { return OUT; }
-        var s = m.equals("near") ? NEAR : (m.equals("city") ? CITY : NO_DATA);
-        if (s != NO_DATA && !(d["aqi"] instanceof Number && d["h"] instanceof Array)) { return NO_DATA; }
-        return s;
+        if (m.equals("nopos")) { return NOPOS; }
+        if (m.equals("city") && d["aqi"] instanceof Number) { return CITY; }
+        return NO_DATA;
     }
 
     // Data time: "dt" if stored, else the receive time (payloads stored by older builds).
@@ -51,11 +51,14 @@ module GlanceData {
         return data;
     }
 
-    // City to remember for the next request: only when the proxy resolved to one (near/city).
-    function cityToStore(d as Dictionary) as String? {
+    // Place to remember for the next request: "out" when out of zone, the city code when the
+    // server resolved one; null otherwise (nopos, junk).
+    function placeToStore(d as Dictionary) as String? {
         var m = d["m"];
         var c = d["c"];
-        if (m instanceof String && (m.equals("near") || m.equals("city")) && c instanceof String) { return c; }
+        if (!(m instanceof String)) { return null; }
+        if (m.equals("out")) { return "out"; }
+        if (m.equals("city") && c instanceof String) { return c; }
         return null;
     }
 }

@@ -46,8 +46,8 @@ function mapParseOutAndErrors(logger as Logger) as Boolean {
     Test.assert(o != null && (o["m"] as String).equals("out"));
     Test.assert(MapModel.parse({}) == null);
     Test.assert(MapModel.parse({"m" => 5}) == null);
-    Test.assert(MapModel.parse({"m" => "near"}) == null);                       // no bbox
-    Test.assert(MapModel.parse({"m" => "near", "bbox" => [1, 2, 3]}) == null);  // short bbox
+    Test.assert(MapModel.parse({"m" => "city"}) == null);                       // no bbox
+    Test.assert(MapModel.parse({"m" => "city", "bbox" => [1, 2, 3]}) == null);  // short bbox
     Test.assert(MapModel.parse({"m" => "weird", "bbox" => [76.6, 43.14, 77.26, 43.5]}) == null);
     return true;
 }
@@ -68,18 +68,26 @@ function mapParseStationsAndMe(logger as Logger) as Boolean {
     var a = st[0] as Array;
     Test.assert(near(a[0], 43.25) && near(a[1], 76.9) && a[2] == 1);
     Test.assertEqual((st[1] as Array)[2], MapModel.GRAY);
-    var you = r["me"] as Array;
-    Test.assert(near(you[0], 43.32) && near(you[1], 76.93));
+    Test.assert(!r.hasKey("me"));
     var bb = r["bbox"] as Array;
     Test.assert(near(bb[0], 76.6) && near(bb[3], 43.5));
     return true;
 }
 
 (:test)
-function mapParseWithoutMeOrStations(logger as Logger) as Boolean {
-    var r = MapModel.parse({"m" => "near", "bbox" => [76.6, 43.14, 77.26, 43.5], "me" => [2.0, 0.5]});
+function mapParseWithoutStations(logger as Logger) as Boolean {
+    var r = MapModel.parse({"m" => "city", "bbox" => [76.6, 43.14, 77.26, 43.5], "me" => [2.0, 0.5]});
     Test.assert(r != null);
     Test.assertEqual((r["st"] as Array).size(), 0);
-    Test.assert(r["me"] == null);  // out of the unit square
+    Test.assert(!r.hasKey("me"));
+    return true;
+}
+
+(:test)
+function mapParseNoposAndNear(logger as Logger) as Boolean {
+    var n = MapModel.parse({"m" => "nopos"});
+    Test.assert(n != null);
+    Test.assertEqual(n["m"], "nopos");
+    Test.assert(MapModel.parse({"m" => "near", "bbox" => [76.6, 43.14, 77.26, 43.5]}) == null);
     return true;
 }

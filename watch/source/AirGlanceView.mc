@@ -32,7 +32,20 @@ class AirGlanceView extends WatchUi.GlanceView {
         var title = WatchUi.loadResource(Rez.Strings.Title) as String;
         var d = Store.glance();
         var st = GlanceData.state(d);
-        if (st == GlanceData.NO_DATA || d == null) {
+        if (st == GlanceData.NOPOS) {
+            // No position yet: the longest form of the message that fits the width.
+            var forms = [WatchUi.loadResource(Rez.Strings.NoPos) as String, WatchUi.loadResource(Rez.Strings.NoPosShort) as String];
+            var msg = forms[forms.size() - 1] as String;
+            for (var i = 0; i < forms.size(); i++) {
+                if (dc.getTextWidthInPixels(forms[i] as String, small) <= w) {
+                    msg = forms[i] as String;
+                    break;
+                }
+            }
+            drawMessage(dc, title, msg, h, lineH);
+            return;
+        }
+        if ((st != GlanceData.CITY && st != GlanceData.OUT) || d == null) {
             drawMessage(dc, title, WatchUi.loadResource(Rez.Strings.NoData) as String, h, lineH);
             return;
         }

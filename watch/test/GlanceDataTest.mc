@@ -5,10 +5,10 @@ import Toybox.Test;
 function glanceStateClassifiesPayloads(logger as Logger) as Boolean {
     Test.assertEqual(GlanceData.state(null), GlanceData.NO_DATA);
     Test.assertEqual(GlanceData.state({"m" => "out"}), GlanceData.OUT);
-    Test.assertEqual(GlanceData.state({"m" => "near", "aqi" => 80, "h" => [1, 2, null]}), GlanceData.NEAR);
-    Test.assertEqual(GlanceData.state({"m" => "city", "aqi" => 80, "h" => [1, 2, null]}), GlanceData.CITY);
-    Test.assertEqual(GlanceData.state({"m" => "near"}), GlanceData.NO_DATA);
-    Test.assertEqual(GlanceData.state({"m" => "near", "aqi" => 80}), GlanceData.NO_DATA);
+    Test.assertEqual(GlanceData.state({"m" => "nopos"}), GlanceData.NOPOS);
+    Test.assertEqual(GlanceData.state({"m" => "city", "aqi" => 80}), GlanceData.CITY);
+    Test.assertEqual(GlanceData.state({"m" => "near", "aqi" => 80, "h" => []}), GlanceData.NO_DATA);
+    Test.assertEqual(GlanceData.state({"m" => "city"}), GlanceData.NO_DATA);
     Test.assertEqual(GlanceData.state({"m" => "bogus"}), GlanceData.NO_DATA);
     Test.assertEqual(GlanceData.state({"aqi" => 80, "h" => []}), GlanceData.NO_DATA);
     return true;
@@ -79,13 +79,10 @@ function onReceiveIgnoresErrorsAndGarbage(logger as Logger) as Boolean {
 }
 
 (:test)
-function onReceiveCityOnlyForNearAndCity(logger as Logger) as Boolean {
-    var n = {"m" => "near", "aqi" => 80, "h" => [1], "c" => "karaganda"};
-    var o = {"m" => "out", "c" => "almaty"};
-    Test.assert(GlanceData.cityToStore(n) != null);
-    Test.assertEqual(GlanceData.cityToStore(n), "karaganda");
-    Test.assert(GlanceData.cityToStore({"m" => "city", "c" => "almaty"}) != null);
-    Test.assert(GlanceData.cityToStore(o) == null);
-    Test.assert(GlanceData.cityToStore({"m" => "near"}) == null);
+function placeToStoreRemembersOut(logger as Logger) as Boolean {
+    Test.assertEqual(GlanceData.placeToStore({"m" => "out"}), "out");
+    Test.assertEqual(GlanceData.placeToStore({"m" => "city", "c" => "karaganda"}), "karaganda");
+    Test.assert(GlanceData.placeToStore({"m" => "nopos"}) == null);
+    Test.assert(GlanceData.placeToStore({"m" => "city"}) == null);
     return true;
 }

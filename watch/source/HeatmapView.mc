@@ -20,7 +20,7 @@ module HeatmapLog {
 class HeatmapView extends WatchUi.View {
     private const CROSS_HALF = 3;
 
-    private enum { LOADING, OUT, ERROR, MAP }
+    private enum { LOADING, OUT, NOPOS, ERROR, MAP }
 
     private var _state as Number = LOADING;
     private var _fetch as HeatmapFetch;
@@ -30,7 +30,7 @@ class HeatmapView extends WatchUi.View {
     private var _gw as Number = 0;
     private var _gh as Number = 0;
     private var _stations as Array = [];  // [[fx, fy, cat], ...]
-    private var _me as Array? = null;     // [fx, fy]
+    private var _me as Array? = null;     // [fx, fy], computed locally from the request position
     private var _time as String? = null;  // HH:MM of receipt
 
     function initialize() {
@@ -61,16 +61,17 @@ class HeatmapView extends WatchUi.View {
         var m = data["m"];
         if (!(m instanceof String)) { return ERROR; }
         if (m.equals("out")) {
-            // Out of zone is explicit: drop the held map so a later error shows NoData.
-            _grid = null;
-            _stations = [];
-            _me = null;
-            _time = null;
+            Store.setPlace("out");
+            dropMap();
             return OUT;
         }
-        if (!m.equals("near") && !m.equals("city")) { return ERROR; }
+        if (m.equals("nopos")) {
+            dropMap();
+            return NOPOS;
+        }
+        if (!m.equals("city")) { return ERROR; }
         var c = data["c"];
-        if (c instanceof String) { Store.setLastCity(c); }
+        if (c instanceof String) { Store.setPlace(c); }
 
         var w = data["w"];
         var h = data["h"];
@@ -97,14 +98,7 @@ class HeatmapView extends WatchUi.View {
             }
         }
 
-        var you = null;
-        var mv = data["me"];
-        if (mv instanceof Array && mv.size() == 2 && (mv[0] instanceof Number || mv[0] instanceof Float || mv[0] instanceof Double)
-            && (mv[1] instanceof Number || mv[1] instanceof Float || mv[1] instanceof Double)) {
-            var mx = mv[0].toFloat();
-            var my = mv[1].toFloat();
-            if (inUnit(mx) && inUnit(my)) { you = [mx, my]; }
-        }
+        var you = HeatmapModel.meFrac(bbox, _fetch.pos());
 
         // Header time is the data time (receipt time minus the proxy's age), local clock.
         var dt = Time.Gregorian.info(new Time.Moment(GlanceData.dataTime(data["a"], Time.now().value())), Time.FORMAT_SHORT);
@@ -115,6 +109,14 @@ class HeatmapView extends WatchUi.View {
         _me = you;
         _time = dt.hour.format("%02d") + ":" + dt.min.format("%02d");
         return MAP;
+    }
+
+    // Out of zone / no position is explicit: drop the held map so a later error shows NoData.
+    private function dropMap() as Void {
+        _grid = null;
+        _stations = [];
+        _me = null;
+        _time = null;
     }
 
     private function inUnit(f as Float) as Boolean {
@@ -128,8 +130,9 @@ class HeatmapView extends WatchUi.View {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();
 
-        if (_state == OUT) {
-            drawCentered(dc, WatchUi.loadResource(Rez.Strings.OutOfZone) as String, Aqi.GRAY);
+        if (_state == OUT || _state == NOPOS) {
+            var id = _state == OUT ? Rez.Strings.OutOfZone : Rez.Strings.NoPosShort;
+            drawCentered(dc, WatchUi.loadResource(id) as String, Aqi.GRAY);
         } else if (_state == LOADING) {
             drawHeader(dc, false);
             drawCentered(dc, WatchUi.loadResource(Rez.Strings.Loading) as String, Graphics.COLOR_WHITE);
@@ -151,7 +154,7 @@ class HeatmapView extends WatchUi.View {
         var st = GlanceData.state(gd);
         var aqiText = null;
         var aqiColor = Aqi.GRAY;
-        if ((st == GlanceData.NEAR || st == GlanceData.CITY) && gd != null) {
+        if (st == GlanceData.CITY && gd != null) {
             var n = gd["aqi"] as Number;
             aqiText = "AQI " + n;
             aqiColor = GlanceData.isStale(gd, Time.now().value()) ? Aqi.GRAY : Aqi.color(Aqi.category(n));

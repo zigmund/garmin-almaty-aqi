@@ -8,20 +8,9 @@ function endsWith(s as String, suffix as String) as Boolean {
 }
 
 (:test)
-function apiGlanceUrlWithoutFix(logger as Logger) as Boolean {
-    Test.assert(endsWith(Api.glanceUrl(null, "karaganda"), "/v1/glance?city=karaganda"));
-    return true;
-}
-
-(:test)
-function apiGlanceUrlWithFix(logger as Logger) as Boolean {
-    var u = Api.glanceUrl([43.23891, 76.88972, 0], "almaty");
-    Test.assert(u.find("/v1/glance?city=almaty&lat=43.239&lon=76.890") != null);
-    return true;
-}
-
-(:test)
-function apiHeatmapUrl(logger as Logger) as Boolean {
-    Test.assert(endsWith(Api.heatmapUrl(null, "almaty"), "/v1/heatmap?city=almaty"));
+function apiUrls(logger as Logger) as Boolean {
+    Test.assertEqual(Api.glanceUrl(null, null), BuildInfo.PROXY_URL + "/v1/glance");
+    Test.assertEqual(Api.glanceUrl([43.2389, 76.8897], "almaty"), BuildInfo.PROXY_URL + "/v1/glance?city=almaty&lat=43.239&lon=76.890");
+    Test.assertEqual(Api.heatmapUrl(null, "out"), BuildInfo.PROXY_URL + "/v1/heatmap?city=out");
     return true;
 }
