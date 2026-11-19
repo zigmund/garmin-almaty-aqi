@@ -31,8 +31,14 @@ class AlmatyAqiApp extends Application.AppBase {
         WatchUi.requestUpdate();
     }
 
-    // The device's own map where it has one; the grid heat map elsewhere.
+    // The device's own map where it has one; the grid heat map elsewhere. With widget glances off
+    // (a setting on CIQ 3.x watches) the widget starts full-screen in the widget loop, where a
+    // MapView initial view fails to start the app: show the summary there, the map on SELECT.
     function getInitialView() as [Views] or [Views, InputDelegates] {
+        var ds = System.getDeviceSettings();
+        if (ds has :isGlanceModeEnabled && !ds.isGlanceModeEnabled) {
+            return [new SummaryView(), new SummaryDelegate()];
+        }
         if (WatchUi has :MapView) {
             var v = new MapAirView();
             return [v, new MapAirDelegate(v)];
