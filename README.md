@@ -8,6 +8,10 @@ dashboard.air.org.kz, not a value for your location. Data comes from the communi
 network of the [Almaty Air Initiative](https://air.org.kz) through a small self-hosted Go
 server that hides the API key, caches responses and keeps the watch traffic tiny.
 
+On watches where widget glances can be turned off (fēnix 6, MARQ, Forerunner 245/945 and other
+Connect IQ 3 models) and are off, the widget opens on a full-screen version of the glance; press
+SELECT for the map.
+
 ![Glance](assets/glance.png) ![Heat map](assets/heatmap.png)
 
 ## Reading the colors
