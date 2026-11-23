@@ -7,6 +7,11 @@ class HeatmapDelegate extends WatchUi.BehaviorDelegate {
         BehaviorDelegate.initialize();
     }
 
+    function onMenu() as Boolean {
+        AppMenu.push();
+        return true;
+    }
+
     function onBack() as Boolean {
         WatchUi.popView(WatchUi.SLIDE_RIGHT);
         return true;

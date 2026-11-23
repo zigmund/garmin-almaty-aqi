@@ -2,8 +2,8 @@
     <string id="AppName">Almaty AQI</string>
     <string id="NoData" scope="glance">No data</string>
     <string id="OutOfZone" scope="glance">Out of coverage</string>
-    <string id="NoPos" scope="glance">No location — open the widget</string>
-    <string id="NoPosShort" scope="glance">No location</string>
+    <string id="NoPos" scope="glance">City unknown — choose in the menu</string>
+    <string id="NoPosShort" scope="glance">City unknown</string>
     <string id="MinAgo" scope="glance">$1$ min ago</string>
     <string id="MinShort" scope="glance">$1$ min</string>
     <string id="HourAgo" scope="glance">$1$ h ago</string>
@@ -19,4 +19,11 @@
     <string id="Cat3" scope="glance">Unhealthy</string>
     <string id="Cat4" scope="glance">Very unhealthy</string>
     <string id="Cat5" scope="glance">Hazardous</string>
+    <string id="City">City</string>
+    <string id="Automatic">Automatic</string>
+    <string id="Almaty">Almaty</string>
+    <string id="Karaganda">Karaganda</string>
+    <string id="Version">Version</string>
+    <string id="Selected">Selected</string>
+    <string id="AskCity">Choose a city?</string>
 </strings>

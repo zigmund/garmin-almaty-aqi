@@ -13,15 +13,35 @@ module Store {
         Application.Storage.setValue("glance", d);
     }
 
-    // Last place the server reported: "almaty" | "karaganda" | "out", else null.
-    // Storage key stays "city" so values written by older builds still read.
-    function place() as String? {
-        var v = Application.Storage.getValue("city");
-        if (v instanceof String && (v.equals("almaty") || v.equals("karaganda") || v.equals("out"))) { return v; }
-        return null;
+    // City chosen on the watch ("almaty" | "karaganda"), else null; null removes the key.
+    function manual() as String? {
+        return Place.cityOrNull(Application.Storage.getValue("manual"));
     }
 
-    function setPlace(p as String) as Void {
-        Application.Storage.setValue("city", p);
+    function setManual(c as String?) as Void {
+        if (c == null) {
+            Application.Storage.deleteValue("manual");
+        } else {
+            Application.Storage.setValue("manual", c);
+        }
+    }
+
+    // Last city the server resolved from the position. Storage key stays "city" so values
+    // written by older builds still read.
+    function lastAuto() as String? {
+        return Place.cityOrNull(Application.Storage.getValue("city"));
+    }
+
+    function setLastAuto(c as String) as Void {
+        Application.Storage.setValue("city", c);
+    }
+
+    // Whether the user was already asked to pick a city after a failed auto-detect.
+    function asked() as Boolean {
+        return Application.Storage.getValue("asked") == true;
+    }
+
+    function setAsked(b as Boolean) as Void {
+        Application.Storage.setValue("asked", b);
     }
 }

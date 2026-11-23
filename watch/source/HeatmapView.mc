@@ -24,30 +24,55 @@ class HeatmapView extends WatchUi.View {
 
     private var _state as Number = LOADING;
     private var _fetch as HeatmapFetch;
+    private var _shown as Boolean = false;  // a response after onHide must not push the question
 
     // Last good map, kept in memory only (never persisted).
     private var _grid as ByteArray? = null;
     private var _gw as Number = 0;
     private var _gh as Number = 0;
     private var _stations as Array = [];  // [[fx, fy, cat], ...]
-    private var _me as Array? = null;     // [fx, fy], computed locally from the request position
+    private var _bbox as Array? = null;   // bbox of the last good map; the "me" mark is derived from it and the GPS fix
     private var _time as String? = null;  // HH:MM of receipt
 
-    function initialize() {
+    private var _root as Boolean;
+    private var _leaver as Leaver? = null;
+
+    function initialize(isRoot as Boolean) {
         View.initialize();
-        _fetch = new HeatmapFetch(method(:onResp));
+        _root = isRoot;
+        _fetch = new HeatmapFetch(self, true);
     }
 
     function onShow() as Void {
-        _state = LOADING;
+        _shown = true;
+        if (Ask.takePending()) {
+            AppMenu.pushCities(1);
+            return;
+        }
+        if (Ask.takeLeave()) {
+            if (_root) {
+                _state = LOADING;
+                WatchUi.requestUpdate();
+                _leaver = new Leaver();
+                _leaver.start();
+            } else {
+                GlanceNow.fetch(null);
+                WatchUi.popView(WatchUi.SLIDE_RIGHT);
+            }
+            return;
+        }
+        // Keep the last screen while refetching (LOADING only before the first response): coming
+        // back from the question or the menu must not flash "Loading".
         _fetch.start();
     }
 
     function onHide() as Void {
+        _shown = false;
         _fetch.stop();
     }
 
     function onResp(code as Number, data as Dictionary or String or Null) as Void {
+        if (!_shown) { return; }
         if (code != 200 || !(data instanceof Dictionary)) {
             _state = ERROR;
         } else {
@@ -61,17 +86,18 @@ class HeatmapView extends WatchUi.View {
         var m = data["m"];
         if (!(m instanceof String)) { return ERROR; }
         if (m.equals("out")) {
-            Store.setPlace("out");
+            Ask.maybe(m);
             dropMap();
             return OUT;
         }
         if (m.equals("nopos")) {
+            Ask.maybe(m);
             dropMap();
             return NOPOS;
         }
         if (!m.equals("city")) { return ERROR; }
         var c = data["c"];
-        if (c instanceof String) { Store.setPlace(c); }
+        Place.onResult("city", c instanceof String ? c : null, _fetch.sentPos());
 
         var w = data["w"];
         var h = data["h"];
@@ -98,15 +124,13 @@ class HeatmapView extends WatchUi.View {
             }
         }
 
-        var you = HeatmapModel.meFrac(bbox, _fetch.pos());
-
         // Header time is the data time (receipt time minus the server's age), local clock.
         var dt = Time.Gregorian.info(new Time.Moment(GlanceData.dataTime(data["a"], Time.now().value())), Time.FORMAT_SHORT);
         _grid = grid;
         _gw = w;
         _gh = h;
         _stations = stations;
-        _me = you;
+        _bbox = bbox;
         _time = dt.hour.format("%02d") + ":" + dt.min.format("%02d");
         return MAP;
     }
@@ -115,7 +139,7 @@ class HeatmapView extends WatchUi.View {
     private function dropMap() as Void {
         _grid = null;
         _stations = [];
-        _me = null;
+        _bbox = null;
         _time = null;
     }
 
@@ -208,8 +232,9 @@ class HeatmapView extends WatchUi.View {
             dc.drawCircle(p[0], p[1], 2);
         }
 
-        if (_me != null) {
-            var q = HeatmapModel.toPx(_me as Array, side, ox, oy);
+        var mark = _bbox != null ? HeatmapModel.meFrac(_bbox as Array, _fetch.pos()) : null;
+        if (mark != null) {
+            var q = HeatmapModel.toPx(mark, side, ox, oy);
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
             dc.drawLine(q[0] - CROSS_HALF, q[1], q[0] + CROSS_HALF, q[1]);
             dc.drawLine(q[0], q[1] - CROSS_HALF, q[0], q[1] + CROSS_HALF);

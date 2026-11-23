@@ -57,15 +57,4 @@ module GlanceData {
         data["dt"] = dataTime(data["a"], nowSec);
         return data;
     }
-
-    // Place to remember for the next request: "out" when out of zone, the city code when the
-    // server resolved one; null otherwise (nopos, junk).
-    function placeToStore(d as Dictionary) as String? {
-        var m = d["m"];
-        var c = d["c"];
-        if (!(m instanceof String)) { return null; }
-        if (m.equals("out")) { return "out"; }
-        if (m.equals("city") && c instanceof String) { return c; }
-        return null;
-    }
 }

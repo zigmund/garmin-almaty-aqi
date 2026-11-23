@@ -37,8 +37,10 @@ Opening the widget shows the city. On watches with Garmin maps it is the watch's
 dot per station in its category colour (the dots are dithered, so the map shows through and
 dense areas read like a heat map). There is no ring for your position on these maps: the
 watch's own arrow shows it. Press SELECT to pan and zoom with the buttons, BACK to return to
-the whole city, BACK again to leave. Watches without maps show a grid heat map of the city
-instead, with a mark for your position that is computed on the watch.
+the whole city, BACK again to leave. Press MENU to choose the city (Automatic, Almaty or
+Karaganda) and to see the version. Watches without maps show a grid heat map of the city
+instead, with a mark for your position that is computed on the watch; that GPS fix stays on
+the watch and is never sent.
 
 ## Install
 
@@ -60,9 +62,11 @@ watch (glance / widget)  -->  almatyaqi-server (server/)  -->  Almaty Air Initia
    every 5 minutes             compact JSON
 ```
 
-The watch asks the server for the city it is in. It sends its position (rounded to about
-100 m) and the server only decides which city it falls into: Almaty, Karaganda or out of
-coverage (`nopos` when the watch has no position yet). The glance is one value per city: for
+The watch asks the server for the city it is in. The city is the one chosen in the
+widget menu (MENU button); otherwise the watch sends its position from the weather
+observation (rounded to about 100 m, with the last city as a fallback) and the server decides
+which city it falls into: Almaty, Karaganda or out of coverage (`nopos` when there is no
+position yet). The map's GPS only marks "you" on the watch. The glance is one value per city: for
 Almaty the average of the district values AAI publishes (the number dashboard.air.org.kz
 shows), for Karaganda the mean of the stations. The heat map is a 24x24 grid of categories
 built from the stations (3 km range per cell); the position mark on it is computed on the
@@ -206,7 +210,9 @@ Data: [Almaty Air Initiative](https://air.org.kz), [CC BY 4.0](https://creativec
 
 ## Privacy
 
-The watch sends its position rounded to about 100 m (3 decimals) to the server. The server
+The watch sends the position of its latest weather observation, rounded to about 100 m (3
+decimals), to the server; with a city chosen in the menu it sends only the city and no
+position. The map GPS fix is used on the watch only and is not sent. The server
 uses it only to pick the city and does not log or store it; it logs upstream requests and
 errors. The reverse proxy in front of it must not log it either: with nginx set
 `access_log off;` for the location (or use a `log_format` without `$args`), as shown above.
