@@ -11,7 +11,7 @@ NAME    := AlmatyAQI
 MONKEYC := "$(SDK)/bin/monkeyc"
 FLAGS   := -w $(if $(RELEASE),-r)
 
-# Shown in Settings → Version as "VERSION (COMMIT)". Locally from git: the last v* tag, plus
+# Shown in the widget menu (MENU → Version) as "VERSION (COMMIT)". Locally from git: the last v* tag, plus
 # "+N" for N commits after it ("0.0.0" before the first release); "+" after the commit marks
 # uncommitted changes. The release workflow passes VERSION=X.Y.Z and COMMIT explicitly.
 VERSION ?= $(shell v=$$(git describe --tags --match 'v[0-9]*' --long 2>/dev/null) && echo "$$v" | sed -e 's/^v//' -e 's/-\([0-9]*\)-g[0-9a-f]*$$/+\1/' -e 's/+0$$//' || echo 0.0.0)

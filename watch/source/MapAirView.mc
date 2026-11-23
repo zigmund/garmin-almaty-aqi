@@ -13,32 +13,49 @@ class MapAirView extends WatchUi.MapView {
 
     private var _state as Number = LOADING;
     private var _fetch as HeatmapFetch;
+    private var _shown as Boolean = false;       // a response after onHide must not touch the view
     private var _hasMarkers as Boolean = false;  // last good markers stay on screen after an error
     private var _hasCity as Boolean = false;     // the map area frames a city (stored or from a response)
 
-    function initialize() {
+    private var _skipFetch as Boolean = false;   // the first onShow uses the response MapGate handed over
+
+    // first: the parsed city response from MapGate, or null (then the first onShow fetches).
+    function initialize(first as Dictionary?) {
         MapView.initialize();
         setMapMode(WatchUi.MAP_MODE_PREVIEW);
         var ds = System.getDeviceSettings();
         setScreenVisibleArea(0, 0, ds.screenWidth, ds.screenHeight);
-        _fetch = new HeatmapFetch(method(:onResp));
+        _fetch = new HeatmapFetch(self, false);
         // MapView throws at start without a map area, so always set one: the last known city, or
         // Almaty as a placeholder that is not drawn (_hasCity stays false) until a city response.
-        var place = Store.place();
-        _hasCity = place != null && (place.equals("almaty") || place.equals("karaganda"));
+        var place = Place.city();
+        _hasCity = place != null;
         setArea(MapModel.cityBbox(_hasCity ? place as String : "almaty"));
+        if (first != null) {
+            showMarkers(first);
+            _state = MAP;
+            _skipFetch = true;
+        }
     }
 
     function onShow() as Void {
-        _state = LOADING;
+        _shown = true;
+        // Keep the last screen while refetching (LOADING only before the first response): coming
+        // back from the question or the menu must not flash "Loading".
+        if (_skipFetch) {
+            _skipFetch = false;
+            return;
+        }
         _fetch.start();
     }
 
     function onHide() as Void {
+        _shown = false;
         _fetch.stop();
     }
 
     function onResp(code as Number, data as Dictionary or String or Null) as Void {
+        if (!_shown) { return; }
         var r = (code == 200 && data instanceof Dictionary) ? MapModel.parse(data) : null;
         if (r == null) {
             _state = ERROR;
@@ -47,13 +64,12 @@ class MapAirView extends WatchUi.MapView {
             _hasMarkers = false;
             _state = NOPOS;
         } else if ((r["m"] as String).equals("out")) {
-            Store.setPlace("out");
             clear();
             _hasMarkers = false;
             _state = OUT;
         } else {
             var c = (data as Dictionary)["c"];
-            if (c instanceof String) { Store.setPlace(c); }
+            Place.onResult("city", c instanceof String ? c : null, _fetch.sentPos());
             showMarkers(r);
             _state = MAP;
         }
@@ -103,28 +119,15 @@ class MapAirView extends WatchUi.MapView {
             dc.clear();
             var id = _state == OUT ? Rez.Strings.OutOfZone : _state == NOPOS ? Rez.Strings.NoPosShort
                 : _state == LOADING ? Rez.Strings.Loading : Rez.Strings.NoData;
-            drawMessage(dc, WatchUi.loadResource(id) as String, _state == LOADING ? Graphics.COLOR_WHITE : Aqi.GRAY);
+            MapMsg.draw(dc, WatchUi.loadResource(id) as String, _state == LOADING ? Graphics.COLOR_WHITE : Aqi.GRAY);
             return;
         }
         MapView.onUpdate(dc);
         if (_state == LOADING) {
-            drawMessage(dc, WatchUi.loadResource(Rez.Strings.Loading) as String, Graphics.COLOR_WHITE);
+            MapMsg.draw(dc, WatchUi.loadResource(Rez.Strings.Loading) as String, Graphics.COLOR_WHITE);
         } else if (_state == ERROR && !_hasMarkers) {
-            drawMessage(dc, WatchUi.loadResource(Rez.Strings.NoData) as String, Aqi.GRAY);
+            MapMsg.draw(dc, WatchUi.loadResource(Rez.Strings.NoData) as String, Aqi.GRAY);
         }
-    }
-
-    // A centered message on a black plate, readable over the map.
-    private function drawMessage(dc as Dc, s as String, color as Number) as Void {
-        var font = Graphics.FONT_SMALL;
-        var w = dc.getTextWidthInPixels(s, font) + 16;
-        var h = dc.getFontHeight(font) + 8;
-        var cx = dc.getWidth() / 2;
-        var cy = dc.getHeight() / 2;
-        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
-        dc.fillRoundedRectangle(cx - w / 2, cy - h / 2, w, h, 6);
-        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, cy, font, s, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 }
 
@@ -140,6 +143,11 @@ class MapAirDelegate extends WatchUi.BehaviorDelegate {
 
     function onSelect() as Boolean {
         _view.setMapMode(WatchUi.MAP_MODE_BROWSE);
+        return true;
+    }
+
+    function onMenu() as Boolean {
+        AppMenu.push();
         return true;
     }
 

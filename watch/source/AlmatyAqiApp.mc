@@ -22,12 +22,7 @@ class AlmatyAqiApp extends Application.AppBase {
     }
 
     function onBackgroundData(data as Application.PersistableType) as Void {
-        var d = GlanceData.onReceive(data, Time.now().value());
-        if (d != null) {
-            Store.setGlance(d);
-            var p = GlanceData.placeToStore(d);
-            if (p != null) { Store.setPlace(p); }
-        }
+        Place.applyGlance(data, Time.now().value());
         WatchUi.requestUpdate();
     }
 
@@ -39,10 +34,9 @@ class AlmatyAqiApp extends Application.AppBase {
             return [new SummaryView(), new SummaryDelegate()];
         }
         if (WatchUi has :MapView) {
-            var v = new MapAirView();
-            return [v, new MapAirDelegate(v)];
+            return [new MapGate(true), new MapGateDelegate()];
         }
-        return [new HeatmapView(), new HeatmapDelegate()];
+        return [new HeatmapView(true), new HeatmapDelegate()];
     }
 
     // Watches with glances (monkey.jungle excludes this on the others): glances are a setting on

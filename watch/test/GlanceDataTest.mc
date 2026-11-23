@@ -80,15 +80,6 @@ function onReceiveIgnoresErrorsAndGarbage(logger as Logger) as Boolean {
 }
 
 (:test)
-function placeToStoreRemembersOut(logger as Logger) as Boolean {
-    Test.assertEqual(GlanceData.placeToStore({"m" => "out"}), "out");
-    Test.assertEqual(GlanceData.placeToStore({"m" => "city", "c" => "karaganda"}), "karaganda");
-    Test.assert(GlanceData.placeToStore({"m" => "nopos"}) == null);
-    Test.assert(GlanceData.placeToStore({"m" => "city"}) == null);
-    return true;
-}
-
-(:test)
 function ageShowsMinutesThenWholeHours(logger as Logger) as Boolean {
     var cases = [[0, "0", false], [59, "59", false], [60, "1", true], [119, "1", true], [120, "2", true]];
     for (var i = 0; i < cases.size(); i++) {

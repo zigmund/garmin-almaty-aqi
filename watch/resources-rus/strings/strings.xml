@@ -2,8 +2,8 @@
     <string id="AppName">Almaty AQI</string>
     <string id="NoData" scope="glance">Нет данных</string>
     <string id="OutOfZone" scope="glance">Вне зоны покрытия</string>
-    <string id="NoPos" scope="glance">Нет позиции — откройте виджет</string>
-    <string id="NoPosShort" scope="glance">Нет позиции</string>
+    <string id="NoPos" scope="glance">Город не определён — выберите в меню</string>
+    <string id="NoPosShort" scope="glance">Город не определён</string>
     <string id="MinAgo" scope="glance">$1$ мин назад</string>
     <string id="MinShort" scope="glance">$1$ мин</string>
     <string id="HourAgo" scope="glance">$1$ ч назад</string>
@@ -19,4 +19,11 @@
     <string id="Cat3" scope="glance">Нездоровый</string>
     <string id="Cat4" scope="glance">Очень нездоровый</string>
     <string id="Cat5" scope="glance">Опасный</string>
+    <string id="City">Город</string>
+    <string id="Automatic">Автоматически</string>
+    <string id="Almaty">Алматы</string>
+    <string id="Karaganda">Караганда</string>
+    <string id="Version">Версия</string>
+    <string id="Selected">Выбран</string>
+    <string id="AskCity">Выбрать город?</string>
 </strings>

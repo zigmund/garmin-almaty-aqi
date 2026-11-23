@@ -17,6 +17,17 @@ class SummaryView extends WatchUi.View {
         View.initialize();
     }
 
+    function onShow() as Void {
+        if (Ask.takePending()) {
+            AppMenu.pushCities(1);
+            return;
+        }
+        if (Ask.takeLeave()) { GlanceNow.fetch(null); }
+        var d = Store.glance();
+        var m = d == null ? null : d["m"];
+        Ask.maybe(m instanceof String ? m : null);
+    }
+
     function onUpdate(dc as Dc) as Void {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();
@@ -41,11 +52,15 @@ class SummaryDelegate extends WatchUi.BehaviorDelegate {
 
     function onSelect() as Boolean {
         if (WatchUi has :MapView) {
-            var v = new MapAirView();
-            WatchUi.pushView(v, new MapAirDelegate(v), WatchUi.SLIDE_LEFT);
+            WatchUi.pushView(new MapGate(false), new MapGateDelegate(), WatchUi.SLIDE_LEFT);
         } else {
-            WatchUi.pushView(new HeatmapView(), new HeatmapDelegate(), WatchUi.SLIDE_LEFT);
+            WatchUi.pushView(new HeatmapView(false), new HeatmapDelegate(), WatchUi.SLIDE_LEFT);
         }
+        return true;
+    }
+
+    function onMenu() as Boolean {
+        AppMenu.push();
         return true;
     }
 
