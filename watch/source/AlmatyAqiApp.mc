@@ -31,12 +31,11 @@ class AlmatyAqiApp extends Application.AppBase {
         WatchUi.requestUpdate();
     }
 
-    // The device's own map where it has one; the grid heat map elsewhere. With widget glances off
-    // (a setting on CIQ 3.x watches) the widget starts full-screen in the widget loop, where a
-    // MapView initial view fails to start the app: show the summary there, the map on SELECT.
+    // The device's own map where it has one; the grid heat map elsewhere. Without glances the
+    // widget starts full-screen in the widget loop, where a MapView initial view fails to start
+    // the app: show the summary there, the map on SELECT.
     function getInitialView() as [Views] or [Views, InputDelegates] {
-        var ds = System.getDeviceSettings();
-        if (ds has :isGlanceModeEnabled && !ds.isGlanceModeEnabled) {
+        if (startsWithSummary()) {
             return [new SummaryView(), new SummaryDelegate()];
         }
         if (WatchUi has :MapView) {
@@ -44,6 +43,22 @@ class AlmatyAqiApp extends Application.AppBase {
             return [v, new MapAirDelegate(v)];
         }
         return [new HeatmapView(), new HeatmapDelegate()];
+    }
+
+    // Watches with glances (monkey.jungle excludes this on the others): glances are a setting on
+    // CIQ 3.x watches, always on from CIQ 4.
+    (:hasGlances)
+    private function startsWithSummary() as Boolean {
+        var ds = System.getDeviceSettings();
+        return ds has :isGlanceModeEnabled && !ds.isGlanceModeEnabled;
+    }
+
+    // Watches without glances at all (fenix 5 family, Chronos, FR935, D2 Delta; set in
+    // monkey.jungle): the runtime check above does not catch them, so a MapView would be the
+    // first screen and the app would fail to start (seen in the fenix5x simulator, 2026-11-23).
+    (:noGlances)
+    private function startsWithSummary() as Boolean {
+        return true;
     }
 
     (:glance)
