@@ -1,8 +1,24 @@
 project.manifest = manifest.xml
 base.sourcePath = source;gen
 
+# Models without glances start on the summary screen (see AlmatyAqiApp.startsWithSummary).
+base.excludeAnnotations = noGlances
+fenix5.excludeAnnotations = hasGlances
+fenix5s.excludeAnnotations = hasGlances
+fenix5x.excludeAnnotations = hasGlances
+fenix5plus.excludeAnnotations = hasGlances
+fenix5splus.excludeAnnotations = hasGlances
+fenix5xplus.excludeAnnotations = hasGlances
+fenixchronos.excludeAnnotations = hasGlances
+fr935.excludeAnnotations = hasGlances
+d2delta.excludeAnnotations = hasGlances
+d2deltas.excludeAnnotations = hasGlances
+d2deltapx.excludeAnnotations = hasGlances
+
 # Launcher icon at each device's native size (base resources carry the 40x40 one).
 fr55.resourcePath = $(fr55.resourcePath);resources-icon35
+fenix5s.resourcePath = $(fenix5s.resourcePath);resources-icon36
+fenixchronos.resourcePath = $(fenixchronos.resourcePath);resources-icon36
 fr57042mm.resourcePath = $(fr57042mm.resourcePath);resources-icon54
 fr165.resourcePath = $(fr165.resourcePath);resources-icon54
 fr165m.resourcePath = $(fr165m.resourcePath);resources-icon54

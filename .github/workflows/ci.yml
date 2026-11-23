@@ -71,10 +71,11 @@ jobs:
             -in "$RUNNER_TEMP/key/key.pem" -out "$RUNNER_TEMP/key/developer_key.der"
 
       # One device per screen class: 260 and 240 MIP, 454 AMOLED, 218, 208, 176 semi-octagon;
-      # fenix7: a widget run as a super app (no widget app type, 64 KB glance).
+      # fenix7: a widget run as a super app (no widget app type, 64 KB glance);
+      # fenix5s: no glances (summary first screen), 64 KB widget, 36 px icon.
       - name: Build
         run: |
-          for d in fenix6pro fenix6s fenix7 fenix847mm fr255s fr55 descentg1; do
+          for d in fenix6pro fenix6s fenix7 fenix847mm fr255s fr55 descentg1 fenix5s; do
             scripts/ciq-docker.sh "$RUNNER_TEMP/key" build DEVICE="$d" RELEASE=1 \
               VERSION=0.0.0 COMMIT="${GITHUB_SHA::7}"
           done

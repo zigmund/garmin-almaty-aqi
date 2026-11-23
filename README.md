@@ -8,7 +8,8 @@ dashboard.air.org.kz, not a value for your location. Data comes from the communi
 network of the [Almaty Air Initiative](https://air.org.kz) through a small self-hosted Go
 server that hides the API key, caches responses and keeps the watch traffic tiny.
 
-On watches where widget glances can be turned off (fēnix 6, MARQ, Forerunner 245/945 and other
+On watches without glances (fēnix 5 family, fēnix Chronos, Forerunner 935, D2 Delta), and on
+watches where widget glances can be turned off (fēnix 6, MARQ, Forerunner 245/945 and other
 Connect IQ 3 models) and are off, the widget opens on a full-screen version of the glance; press
 SELECT for the map.
 
@@ -47,9 +48,9 @@ Side-load: download the latest
 `GARMIN/APPS` on the watch over USB and add Almaty AQI to the widget loop. Allow location and
 background access when asked.
 
-Supported: 72 models with glances (fenix 6/7/8/9 and fenix E, epix Pro, Enduro, MARQ,
-Forerunner 55/165/170/245/255/265/570/745/945/955/965/970, Descent, D2 Mach); the zip's README
-has the full list.
+Supported: 83 models (fenix 5/6/7/8/9, fenix Chronos and fenix E, epix Pro, Enduro, MARQ,
+Forerunner 55/165/170/245/255/265/570/745/935/945/955/965/970, Descent, D2 Delta and D2 Mach);
+the zip's README has the full list.
 
 ## How it works
 
